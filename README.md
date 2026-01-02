@@ -34,7 +34,7 @@ A full-stack web application integrating KUA (Office of Religious Affairs) and D
 ```bash
 # Clone repository
 git clone <repository-url>
-cd project-x
+cd hadiah-terbaik
 
 # Start all services
 docker-compose up -d --build
@@ -76,7 +76,7 @@ npx prisma db seed
 ## 📂 Project Structure
 
 ```
-project-x/
+hadiah-terbaik/
 ├── backend/
 │   ├── src/
 │   │   ├── controllers/      # 6 controllers (kua, operator, verifier, etc.)
