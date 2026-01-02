@@ -1,0 +1,188 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  KUA
+  OPERATOR_DUKCAPIL
+  VERIFIKATOR_DUKCAPIL
+  KEMENAG
+  ADMIN
+}
+
+enum Status {
+  DRAFT
+  SUBMITTED
+  NEEDS_REVISION
+  PROCESSING
+  PENDING_VERIFICATION
+  APPROVED
+  REJECTED
+}
+
+enum DocType {
+  KTP_SUAMI
+  KTP_ISTRI
+  BUKU_NIKAH
+  KK_ASLI
+  // New Required
+  KK_SUAMI
+  KK_ISTRI
+  FORM_F106
+  IJAZAH_SUAMI
+  IJAZAH_ISTRI
+  AKTA_LAHIR_SUAMI
+  AKTA_LAHIR_ISTRI
+  BUKU_NIKAH_SUAMI
+  BUKU_NIKAH_ISTRI
+  // Parent documents - SEPARATED
+  BUKU_NIKAH_ORTU_SUAMI
+  BUKU_NIKAH_ORTU_ISTRI
+  // Conditional: Pindah
+  FORM_F103
+  SKPWNI
+  // Conditional: Job
+  SK_KERJA_SUAMI
+  SK_KERJA_ISTRI
+  // Generic
+  LAINNYA
+}
+
+// KK (Kartu Keluarga) Options for MOU Scenarios
+enum KKOption {
+  TETAP_MASING_MASING   // Stay in respective parent KK
+  PISAH_IKUT_ORTU_ISTRI // Separate KK, follow wife's parents address
+  PISAH_IKUT_ORTU_SUAMI // Separate KK, follow husband's parents address
+  PISAH_ALAMAT_BARU     // Separate KK, completely new address
+}
+
+// Kecamatan Master Data
+model Kecamatan {
+  id         String   @id @default(uuid())
+  kode       String   @unique
+  nama       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  users User[]
+
+  @@map("kecamatan")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  password     String
+  full_name    String
+  nip          String?   @unique
+  role         Role
+  kecamatan_id String? // Reference to Kecamatan
+  created_at   DateTime @default(now())
+
+  // Relations
+  kecamatan            Kecamatan?   @relation(fields: [kecamatan_id], references: [id], onDelete: SetNull)
+  created_submissions  Permohonan[] @relation("Creator")
+  assigned_submissions Permohonan[] @relation("Assignee")
+  logs                 StatusLog[]
+
+  @@map("users")
+}
+
+model Permohonan {
+  id                  String   @id @default(uuid())
+  ticket_number       String   @unique
+  status              Status   @default(DRAFT)
+  user_id             String
+  current_assignee_id String?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  // Data Pernikahan (JSON for flexibility or relation 1:1)
+  // According to Phase 3 ERD, we use a separate table DataPernikahan
+  data_pernikahan DataPernikahan?
+
+  // Relations
+  creator  User        @relation("Creator", fields: [user_id], references: [id])
+  assignee User?       @relation("Assignee", fields: [current_assignee_id], references: [id])
+  dokumen  Dokumen[]
+  logs     StatusLog[]
+
+  @@map("permohonan")
+}
+
+model DataPernikahan {
+  id               String   @id @default(uuid())
+  permohonan_id    String   @unique
+  husband_name     String
+  husband_nik      String
+  wife_name        String
+  wife_nik         String
+  marriage_date    DateTime
+  marriage_book_no String
+  kode_kecamatan   String // Changed from kua_code
+
+  // New Contact Info
+  email_suami String?
+  hp_suami    String?
+  email_istri String?
+  hp_istri    String?
+
+  // New Marriage Details
+  marriage_location String?
+  marriage_time     String?
+
+  // Notes from KUA
+  notes String? @db.Text
+
+  // MOU Scenario Selection (17 scenarios)
+  mou_scenario        Int?     // 1-17, maps to official MOU scenarios
+  
+  // Derived flags (auto-calculated from scenario for easier queries)
+  is_outside_district Boolean  @default(false) // Luar kabupaten (skenario 9-17)
+  kk_option           KKOption @default(TETAP_MASING_MASING)
+  has_biodata_change  Boolean  @default(false)
+
+  // Relations
+  permohonan Permohonan @relation(fields: [permohonan_id], references: [id], onDelete: Cascade)
+
+  @@map("data_pernikahan")
+}
+
+model Dokumen {
+  id            String   @id @default(uuid())
+  permohonan_id String
+  doc_type      DocType
+  file_path     String
+  file_name     String
+  mime_type     String
+  file_size     Int
+  uploaded_at   DateTime @default(now())
+
+  // Relations
+  permohonan Permohonan @relation(fields: [permohonan_id], references: [id], onDelete: Cascade)
+
+  @@map("dokumen")
+}
+
+model StatusLog {
+  id              String   @id @default(uuid())
+  permohonan_id   String
+  actor_id        String
+  previous_status Status?
+  new_status      Status
+  notes           String?  @db.Text
+  created_at      DateTime @default(now())
+
+  // Relations
+  permohonan Permohonan @relation(fields: [permohonan_id], references: [id], onDelete: Cascade)
+  actor      User       @relation(fields: [actor_id], references: [id])
+
+  @@map("status_logs")
+}

@@ -1,0 +1,113 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../../services/api';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableEmpty } from '../../../components/ui/Table';
+import Button from '../../../components/ui/Button';
+
+import { Card } from '../../../components/ui/Card';
+import { toast } from 'react-toastify';
+
+const MyWork = () => {
+    const navigate = useNavigate();
+    const [myQueue, setMyQueue] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchMyWork = async () => {
+            setLoading(true);
+            try {
+                // Fetch PROCESSING and PENDING_VERIFICATION items
+                const res = await api.get('/dukcapil/operator/queue?status=PROCESSING,PENDING_VERIFICATION&mine=true');
+                // Backend returns { data: { data: [], pagination: {} } }
+                const responseData = res.data.data;
+                const items = responseData?.data || [];
+                setMyQueue(Array.isArray(items) ? items : []);
+            } catch (error) {
+                console.error('Failed to fetch my work:', error);
+                toast.error('Gagal memuat pekerjaan saya');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMyWork();
+    }, []);
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold text-slate-900">Pekerjaan Saya</h1>
+                <p className="text-slate-500 mt-1">Daftar pengajuan yang sedang Anda proses.</p>
+            </div>
+
+            <Card className="overflow-hidden">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>No. Tiket</TableHead>
+                            <TableHead>Nama Pasangan</TableHead>
+                            <TableHead>Waktu Update</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Aksi</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {loading ? (
+                            <TableRow>
+                                <TableCell colSpan={5} className="text-center py-8">Memuat data...</TableCell>
+                            </TableRow>
+                        ) : myQueue.length === 0 ? (
+                            <TableEmpty colSpan={5} message="Anda tidak memiliki pekerjaan aktif." />
+                        ) : (
+                            myQueue.map((item) => (
+                                <TableRow key={item.id}>
+                                    <TableCell>
+                                        <span className="font-mono font-medium text-emerald-600">#{item.ticket_number}</span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="font-medium text-slate-900">
+                                            {item.data_pernikahan?.husband_name} & {item.data_pernikahan?.wife_name}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="text-slate-500 text-sm">
+                                            {new Date(item.updated_at).toLocaleString('id-ID')}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        {item.status === 'PROCESSING' ? (
+                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700">
+                                                Sedang Diproses
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-50 text-yellow-700">
+                                                Menunggu Verifikasi
+                                            </span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button
+                                            variant={item.status === 'PROCESSING' ? 'primary' : 'outline'}
+                                            onClick={() => navigate(`/dukcapil/operator/process/${item.id}`)}
+                                        >
+                                            {item.status === 'PROCESSING' ? 'Lanjutkan' : 'Lihat'}
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+                {!loading && myQueue.length === 0 && (
+                    <div className="p-4 text-center border-t border-slate-100">
+                        <Button variant="outline" onClick={() => navigate('/dukcapil/operator/queue')}>
+                            Ambil dari Antrian
+                        </Button>
+                    </div>
+                )}
+            </Card>
+        </div>
+    );
+};
+
+export default MyWork;
