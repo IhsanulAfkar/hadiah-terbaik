@@ -316,8 +316,8 @@ const Step2Docs = ({ files, handleFileChange, onNext, onPrev, mouScenario }) => 
                         </p>
                         <div className="flex flex-wrap gap-3">
                             <a
-                                href={`${import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || 'http://localhost:3100'}/templates/f103-perpindahan-penduduk.pdf`}
-                                download
+                                href={`${import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || window.location.origin}/templates/f103-perpindahan-penduduk.pdf`}
+                                download="F.1-03-Perpindahan-Penduduk.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-2 px-4 py-2.5 bg-white rounded-lg border border-blue-300 hover:bg-blue-100 hover:border-blue-400 transition-all shadow-sm hover:shadow"
@@ -326,8 +326,8 @@ const Step2Docs = ({ files, handleFileChange, onNext, onPrev, mouScenario }) => 
                                 <span className="text-sm font-medium text-blue-900">F.1-03 Perpindahan Penduduk</span>
                             </a>
                             <a
-                                href={`${import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || 'http://localhost:3100'}/templates/f106-perubahan-data.pdf`}
-                                download
+                                href={`${import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || window.location.origin}/templates/f106-perubahan-data.pdf`}
+                                download="F.1-06-Perubahan-Data.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-2 px-4 py-2.5 bg-white rounded-lg border border-blue-300 hover:bg-blue-100 hover:border-blue-400 transition-all shadow-sm hover:shadow"
