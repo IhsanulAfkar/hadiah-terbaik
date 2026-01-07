@@ -44,8 +44,8 @@ const Akun = () => {
 
         try {
             setLoading(true);
-            await api.put('/users/change-password', {
-                currentPassword: passwordData.currentPassword,
+            await api.put('/auth/change-password', {
+                oldPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword
             });
 
