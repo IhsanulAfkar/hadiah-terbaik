@@ -6,11 +6,12 @@ const { verifyToken, authorizeRole } = require('../middlewares/authMiddleware');
 /**
  * Operator Routes
  * Base path: /api/v1/dukcapil/operator
- * Role: OPERATOR_DUKCAPIL only
+ * Role: OPERATOR_DUKCAPIL and VERIFIKATOR_DUKCAPIL
+ * Note: Verifiers can access operator functions in the unified interface
  */
 
-// All routes require authentication and OPERATOR_DUKCAPIL role
-router.use(verifyToken, authorizeRole(['OPERATOR_DUKCAPIL']));
+// All routes require authentication and OPERATOR or VERIFIER role
+router.use(verifyToken, authorizeRole(['OPERATOR_DUKCAPIL', 'VERIFIKATOR_DUKCAPIL']));
 
 /**
  * Queue Management
