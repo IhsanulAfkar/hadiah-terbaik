@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Request interceptor for adding token
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -24,12 +24,23 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use((response) => {
     return response;
 }, (error) => {
-    // Handle 401 Unauthorized
+    // Handle 401 Unauthorized (Session expired or logged in elsewhere)
     if (error.response && error.response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-        return Promise.reject({ message: 'Sesi Anda telah berakhir. Silakan masuk kembali.' });
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+
+        // Better error message based on backend response
+        const message = error.response.data?.message || 'Sesi Anda telah berakhir';
+
+        // Only redirect if not already on login page
+        if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+        }
+
+        return Promise.reject({
+            message,
+            userMessage: message
+        });
     }
 
     // Standardize error messages in Bahasa Indonesia

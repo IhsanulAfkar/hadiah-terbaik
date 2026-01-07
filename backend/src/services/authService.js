@@ -21,15 +21,24 @@ const login = async (username, password) => {
         throw new Error('Invalid credentials');
     }
 
-    // 3. Generate Token
+    // 3. Generate Token with configurable expiry
     const token = jwt.sign(
         { id: user.id, username: user.username, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: '24h' } // Short-lived in real prod
+        { expiresIn: process.env.JWT_EXPIRES_IN || '2h' }
     );
 
-    // Return user info (excluding password)
-    const { password: _, ...userInfo } = user;
+    // 4. Update user with new active session (invalidates old session automatically)
+    await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            active_session_token: token,
+            last_login_at: new Date()
+        }
+    });
+
+    // Return user info (excluding password and session token)
+    const { password: _, active_session_token: __, ...userInfo } = user;
 
     return { token, user: userInfo };
 };
@@ -47,22 +56,20 @@ const getMe = async (userId) => {
 };
 
 /**
- * Logout user (Client-side token removal)
- * For JWT, we typically handle logout client-side by removing the token
- * This function can be extended to implement token blacklisting with Redis
+ * Logout user
+ * Clears active session token from database
  * 
  * @param {string} userId - User ID
- * @param {string} token - JWT token (optional, for blacklisting)
  * @returns {Object} - Success message
  */
-const logout = async (userId, token = null) => {
-    // For now, just return success message
-    // In production, you might want to:
-    // 1. Add token to Redis blacklist
-    // 2. Set expiry matching token's remaining lifetime
-
-    // TODO: Implement token blacklisting if needed
-    // await redis.set(`blacklist:${token}`, '1', 'EX', remaining_ttl);
+const logout = async (userId) => {
+    // Clear active session token
+    await prisma.user.update({
+        where: { id: userId },
+        data: {
+            active_session_token: null
+        }
+    });
 
     return {
         success: true,

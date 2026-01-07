@@ -122,7 +122,7 @@ const VerificationDetail = () => {
     };
 
     const handleDownload = (filename) => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (!token) {
             toast.error('Anda telah keluar (Logged out)');
             return;
@@ -320,7 +320,7 @@ const VerificationDetail = () => {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => {
-                                                    const token = localStorage.getItem('token');
+                                                    const token = sessionStorage.getItem('token');
                                                     const url = `http://localhost:3000/api/v1/submissions/document/${doc.file_path}?token=${token}&inline=true`;
                                                     window.open(url, '_blank');
                                                 }}

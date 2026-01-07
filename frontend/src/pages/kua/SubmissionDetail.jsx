@@ -32,7 +32,7 @@ const SubmissionDetail = () => {
     }, [id, navigate]);
 
     const handleDownload = (filename) => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (!token) {
             alert('Anda telah keluar (Logged out)');
             return;

@@ -84,6 +84,11 @@ model User {
   nip          String?   @unique
   role         Role
   kecamatan_id String? // Reference to Kecamatan
+  
+  // Session tracking for single session enforcement
+  active_session_token String?   @db.Text
+  last_login_at        DateTime?
+  
   created_at   DateTime @default(now())
 
   // Relations
@@ -94,6 +99,7 @@ model User {
 
   @@map("users")
 }
+
 
 model Permohonan {
   id                  String   @id @default(uuid())

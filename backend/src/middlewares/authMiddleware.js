@@ -1,7 +1,8 @@
 
 const jwt = require('jsonwebtoken');
+const prisma = require('../config/database');
 
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
     // 1. Get header
     const authHeader = req.headers['authorization'];
 
@@ -21,14 +22,35 @@ const verifyToken = (req, res, next) => {
         return res.status(401).json({ success: false, message: 'No token provided' });
     }
 
-    // 5. Verify
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    // 5. Verify JWT
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
         if (err) {
-            return res.status(403).json({ success: false, message: 'Failed to authenticate token' });
+            return res.status(401).json({ success: false, message: 'Token expired or invalid' });
         }
-        // 6. Attach user to request
-        req.user = decoded;
-        next();
+
+        // 6. Validate session - check if token matches active session
+        try {
+            const user = await prisma.user.findUnique({
+                where: { id: decoded.id },
+                select: { active_session_token: true }
+            });
+
+            if (!user || user.active_session_token !== token) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Session expired or login from another location'
+                });
+            }
+
+            // 7. Attach user to request
+            req.user = decoded;
+            next();
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: 'Session validation failed'
+            });
+        }
     });
 };
 
