@@ -85,6 +85,25 @@ const VerifierHistory = () => {
         }
     };
 
+    const getWorkType = (status) => {
+        // Differentiate between verification work and processing work
+        if (status === 'PENDING_VERIFICATION') {
+            return {
+                label: 'Pemrosesan',
+                description: 'Dikirim ke Verifikasi',
+                variant: 'info',
+                icon: '📤'
+            };
+        } else {
+            return {
+                label: 'Verifikasi',
+                description: status === 'APPROVED' ? 'Disetujui' : 'Ditolak',
+                variant: status === 'APPROVED' ? 'success' : 'danger',
+                icon: status === 'APPROVED' ? '✅' : '❌'
+            };
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div>
@@ -125,6 +144,7 @@ const VerifierHistory = () => {
                         <TableRow>
                             <TableHead>No. Tiket</TableHead>
                             <TableHead>Nama Pasangan</TableHead>
+                            <TableHead>Jenis Pekerjaan</TableHead>
                             <TableHead>Waktu Selesai</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Aksi</TableHead>
@@ -133,42 +153,54 @@ const VerifierHistory = () => {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center py-8">Memuat data...</TableCell>
+                                <TableCell colSpan={6} className="text-center py-8">Memuat data...</TableCell>
                             </TableRow>
                         ) : currentItems.length === 0 ? (
-                            <TableEmpty colSpan={5} message="Belum ada riwayat verifikasi" />
+                            <TableEmpty colSpan={6} message="Belum ada riwayat" />
                         ) : (
-                            currentItems.map((item) => (
-                                <TableRow key={item.id} className="hover:bg-slate-50/50">
-                                    <TableCell>
-                                        <span className="font-mono font-medium text-slate-600">#{item.ticket_number}</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="font-medium text-slate-900">
-                                            {item.data_pernikahan?.husband_name} & {item.data_pernikahan?.wife_name}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="text-slate-500 text-sm">
-                                            {new Date(item.updated_at).toLocaleString('id-ID')}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={getStatusVariant(item.status)}>
-                                            {getStatusLabel(item.status)}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => navigate(`/dukcapil/verify/${item.id}`)}
-                                        >
-                                            Detail
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))
+                            currentItems.map((item) => {
+                                const workType = getWorkType(item.status);
+                                return (
+                                    <TableRow key={item.id} className="hover:bg-slate-50/50">
+                                        <TableCell>
+                                            <span className="font-mono font-medium text-slate-600">#{item.ticket_number}</span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="font-medium text-slate-900">
+                                                {item.data_pernikahan?.husband_name} & {item.data_pernikahan?.wife_name}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-lg">{workType.icon}</span>
+                                                <div>
+                                                    <div className="font-semibold text-sm text-slate-900">{workType.label}</div>
+                                                    <div className="text-xs text-slate-500">{workType.description}</div>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-slate-500 text-sm">
+                                                {new Date(item.updated_at).toLocaleString('id-ID')}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant={getStatusVariant(item.status)}>
+                                                {getStatusLabel(item.status)}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => navigate(`/dukcapil/verify/${item.id}`)}
+                                            >
+                                                Detail
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
                         )}
                     </TableBody>
                 </Table>
