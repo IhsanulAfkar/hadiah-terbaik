@@ -73,6 +73,20 @@ const getQueue = async (status = 'SUBMITTED', page = 1, assigneeId = null) => {
                         file_name: true,
                         uploaded_at: true
                     }
+                },
+                status_logs: {
+                    orderBy: {
+                        created_at: 'desc'
+                    },
+                    take: 10,
+                    select: {
+                        id: true,
+                        actor_id: true,
+                        previous_status: true,
+                        new_status: true,
+                        notes: true,
+                        created_at: true
+                    }
                 }
             }
         }),
