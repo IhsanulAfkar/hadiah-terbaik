@@ -25,8 +25,8 @@ const History = () => {
         setLoading(true);
         try {
             // Fetch Operator History using the queue endpoint which now supports historical statuses
-            // Only show completed items (APPROVED or REJECTED)
-            const res = await api.get('/dukcapil/operator/queue?status=APPROVED,REJECTED');
+            // Include PENDING_VERIFICATION for submissions processed by verifier (operator function)
+            const res = await api.get('/dukcapil/operator/queue?status=PENDING_VERIFICATION,APPROVED,REJECTED');
             const responseData = res.data.data;
             const items = responseData?.data || [];
             const validData = Array.isArray(items) ? items : [];
@@ -76,6 +76,34 @@ const History = () => {
         }
     };
 
+    const getStatusLabel = (status) => {
+        switch (status) {
+            case 'APPROVED': return 'Disetujui';
+            case 'REJECTED': return 'Ditolak';
+            case 'PENDING_VERIFICATION': return 'Menunggu Verifikasi';
+            default: return status;
+        }
+    };
+
+    const getWorkType = (status) => {
+        // Differentiate between processing work and verification work
+        if (status === 'PENDING_VERIFICATION') {
+            return {
+                label: 'Pemrosesan',
+                description: 'Dikirim ke Verifikasi',
+                variant: 'info',
+                icon: '📤'
+            };
+        } else {
+            return {
+                label: 'Verifikasi',
+                description: status === 'APPROVED' ? 'Disetujui' : 'Ditolak',
+                variant: status === 'APPROVED' ? 'success' : 'danger',
+                icon: status === 'APPROVED' ? '✅' : '❌'
+            };
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div>
@@ -98,6 +126,7 @@ const History = () => {
                         <Select
                             options={[
                                 { value: '', label: 'Semua Status' },
+                                { value: 'PENDING_VERIFICATION', label: 'Menunggu Verifikasi' },
                                 { value: 'APPROVED', label: 'Disetujui' },
                                 { value: 'REJECTED', label: 'Ditolak' }
                             ]}
@@ -115,6 +144,7 @@ const History = () => {
                         <TableRow>
                             <TableHead>No. Tiket</TableHead>
                             <TableHead>Nama Pasangan</TableHead>
+                            <TableHead>Jenis Pekerjaan</TableHead>
                             <TableHead>Waktu Selesai</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Aksi</TableHead>
@@ -123,46 +153,58 @@ const History = () => {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center py-8">Memuat data...</TableCell>
+                                <TableCell colSpan={6} className="text-center py-8">Memuat data...</TableCell>
                             </TableRow>
                         ) : currentItems.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5}>
+                                <TableCell colSpan={6}>
                                     <TableEmpty message="Belum ada riwayat pengajuan" />
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            currentItems.map((item) => (
-                                <TableRow key={item.id} className="hover:bg-slate-50/50">
-                                    <TableCell>
-                                        <span className="font-mono font-medium text-slate-600">#{item.ticket_number}</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="font-medium text-slate-900">
-                                            {item.data_pernikahan?.husband_name} & {item.data_pernikahan?.wife_name}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="text-slate-500 text-sm">
-                                            {new Date(item.updated_at).toLocaleString('id-ID')}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={getStatusVariant(item.status)}>
-                                            {item.status === 'APPROVED' ? 'Disetujui' : item.status === 'REJECTED' ? 'Ditolak' : 'Menunggu Verifikasi'}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => navigate(`/dukcapil/process/${item.id}`)}
-                                        >
-                                            Detail
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))
+                            currentItems.map((item) => {
+                                const workType = getWorkType(item.status);
+                                return (
+                                    <TableRow key={item.id} className="hover:bg-slate-50/50">
+                                        <TableCell>
+                                            <span className="font-mono font-medium text-slate-600">#{item.ticket_number}</span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="font-medium text-slate-900">
+                                                {item.data_pernikahan?.husband_name} & {item.data_pernikahan?.wife_name}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-lg">{workType.icon}</span>
+                                                <div>
+                                                    <div className="font-semibold text-sm text-slate-900">{workType.label}</div>
+                                                    <div className="text-xs text-slate-500">{workType.description}</div>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-slate-500 text-sm">
+                                                {new Date(item.updated_at).toLocaleString('id-ID')}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant={getStatusVariant(item.status)}>
+                                                {getStatusLabel(item.status)}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => navigate(`/dukcapil/process/${item.id}`)}
+                                            >
+                                                Detail
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
                         )}
                     </TableBody>
                 </Table>
