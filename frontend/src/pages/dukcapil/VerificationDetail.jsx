@@ -26,7 +26,7 @@ const VerificationDetail = () => {
         try {
             // Use role-specific endpoint
             const endpoint = user.role === 'OPERATOR_DUKCAPIL'
-                ? `/dukcapil/submissions/${id}`
+                ? `/dukcapil/operator/submissions/${id}`
                 : `/dukcapil/verifier/submissions/${id}`;
 
             const res = await api.get(endpoint);
