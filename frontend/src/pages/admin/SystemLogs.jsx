@@ -83,7 +83,7 @@ const SystemLogs = () => {
 
     const handleDownload = (path) => {
         const token = sessionStorage.getItem('token');
-        const url = `http://localhost:3000/api/v1/submissions/document/${path}?token=${token}`;
+        const url = `${API_BASE_URL}/submissions/document/${path}?token=${token}`;
         window.open(url, '_blank');
     };
 
@@ -286,7 +286,7 @@ const SystemLogs = () => {
                                                 size="sm"
                                                 onClick={() => {
                                                     const token = sessionStorage.getItem('token');
-                                                    const url = `http://localhost:3000/api/v1/submissions/document/${doc.file_path}?token=${token}&inline=true`;
+                                                    const url = `${API_BASE_URL}/submissions/document/${doc.file_path}?token=${token}&inline=true`;
                                                     window.open(url, '_blank');
                                                 }}
                                             >

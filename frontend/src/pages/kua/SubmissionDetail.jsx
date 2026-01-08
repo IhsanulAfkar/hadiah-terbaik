@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
@@ -37,7 +37,7 @@ const SubmissionDetail = () => {
             alert('Anda telah keluar (Logged out)');
             return;
         }
-        const url = `http://localhost:3000/api/v1/submissions/document/${filename}?token=${token}`;
+        const url = `${API_BASE_URL}/submissions/document/${filename}?token=${token}`;
         window.open(url, '_blank');
     };
 

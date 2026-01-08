@@ -92,4 +92,7 @@ api.interceptors.response.use((response) => {
 // Export ENDPOINTS for use in components
 export { ENDPOINTS } from '../constants/apiEndpoints';
 
+// Export base URL for document preview/download
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+
 export default api;

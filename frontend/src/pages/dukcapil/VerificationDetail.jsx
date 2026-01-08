@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
@@ -138,7 +138,7 @@ const VerificationDetail = () => {
             return;
         }
         try {
-            const url = `http://localhost:3000/api/v1/submissions/document/${filename}?token=${token}`;
+            const url = `${API_BASE_URL}/submissions/document/${filename}?token=${token}`;
             window.open(url, '_blank');
         } catch {
             toast.error('Gagal mengunduh dokumen. Silakan coba lagi.');
@@ -331,7 +331,7 @@ const VerificationDetail = () => {
                                                 size="sm"
                                                 onClick={() => {
                                                     const token = sessionStorage.getItem('token');
-                                                    const url = `http://localhost:3000/api/v1/submissions/document/${doc.file_path}?token=${token}&inline=true`;
+                                                    const url = `${API_BASE_URL}/submissions/document/${doc.file_path}?token=${token}&inline=true`;
                                                     window.open(url, '_blank');
                                                 }}
                                             >
