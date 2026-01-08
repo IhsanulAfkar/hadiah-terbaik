@@ -179,10 +179,20 @@ const secureUpload = (fieldName, maxCount = 1) => {
     };
 };
 
+// Safe import of uploadLimiter with fallback
+let uploadLimiter;
+try {
+    uploadLimiter = require('./rateLimit').uploadLimiter;
+} catch (e) {
+    // Fallback if rateLimit module doesn't have uploadLimiter yet
+    uploadLimiter = (req, res, next) => next();
+}
+
 // Export both simple and secure upload
-module.exports = {
-    upload,           // Standard multer instance - backwards compatible
-    simpleUpload,     // Alias for upload - backwards compatible  
-    secureUpload,     // Enhanced with error handling
-    uploadLimiter: require('./rateLimit').uploadLimiter || (() => (req, res, next) => next()) // Safe fallback
-};
+// IMPORTANT: Export 'upload' as the actual multer instance to maintain backwards compatibility
+// This ensures routes can use upload.single(), upload.array(), upload.any(), etc.
+module.exports = upload;           // Default export - full multer instance with all methods
+module.exports.upload = upload;    // Named export for clarity
+module.exports.simpleUpload = simpleUpload;     // Alias for upload - backwards compatible  
+module.exports.secureUpload = secureUpload;     // Enhanced with error handling
+module.exports.uploadLimiter = uploadLimiter;   // Rate limiter
