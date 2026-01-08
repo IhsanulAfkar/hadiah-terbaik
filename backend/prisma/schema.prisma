@@ -89,6 +89,17 @@ model User {
   active_session_token String?   @db.Text
   last_login_at        DateTime?
   
+  // Password security fields
+  must_change_password Boolean   @default(false)
+  password_changed_at  DateTime? @default(now())
+  failed_login_attempts Int      @default(0)
+  locked_until         DateTime?
+  
+  // Multi-Factor Authentication (MFA) fields
+  mfa_enabled          Boolean  @default(false)
+  mfa_secret           String?  @db.Text
+  backup_codes         String[] // Encrypted backup codes
+  
   created_at   DateTime @default(now())
 
   // Relations

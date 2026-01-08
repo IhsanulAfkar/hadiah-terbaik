@@ -57,15 +57,33 @@ npx prisma migrate deploy
 npx prisma db seed
 ```
 
-### 4. Default Credentials
+### 4. Initial Admin Setup
 
-| Role | Username | Password |
-|------|----------|----------|
-| KUA Officer | `kua_officer` | `password123` |
-| Dukcapil Operator | `dukcapil_operator` | `password123` |
-| Dukcapil Verifier | `dukcapil_verifier` | `password123` |
-| Kemenag  | `kemenag_user` | `password123` |
-| Admin | `admin` | `password123` |
+> [!WARNING]
+> **Security Notice**: For production deployments, never use default or weak passwords. All users must use strong passwords with minimum 12 characters including uppercase, lowercase, numbers, and symbols.
+
+After database initialization, create your first admin user:
+
+```bash
+# Access backend container
+docker exec -it <backend-container-name> sh
+
+# Run admin creation script
+node scripts/create_admin.js
+```
+
+The script will guide you through secure admin creation with:
+- Username validation
+- Strong password requirements (min 12 chars, mixed case, numbers, symbols)
+- Admin role assignment
+- Automatic password change requirement on first login
+
+For development/testing purposes, you can seed test users with:
+```bash
+cd backend
+npx prisma db seed
+```
+**Note**: Seeded users will have randomly generated passwords logged securely. Change these immediately after first login.
 
 ## 📂 Project Structure
 

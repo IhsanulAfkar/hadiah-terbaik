@@ -27,9 +27,61 @@ const operatorRoutes = require('./routes/operatorRoutes');
 const verifierRoutes = require('./routes/verifierRoutes');
 const kemenagRoutes = require('./routes/kemenagRoutes');
 
-// Middleware
-app.use(helmet());
-app.use(cors());
+// Middleware - Security Headers with Content Security Policy
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"], // TailwindCSS requires unsafe-inline
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'"],
+            fontSrc: ["'self'", "https:", "data:"],
+            objectSrc: ["'none'"],
+            mediaSrc: ["'self'"],
+            frameSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+            frameAncestors: ["'none'"],
+            upgradeInsecureRequests: [],
+        },
+    },
+    crossOriginEmbedderPolicy: false,
+    hsts: {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true
+    },
+    noSniff: true,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+}));
+
+// CORS Configuration with whitelist
+const corsOptions = {
+    origin: (origin, callback) => {
+        // Get allowed origins from env (supports multiple origins separated by comma)
+        const allowedOrigins = process.env.CORS_ORIGIN
+            ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+            : ['http://localhost:2200'];
+
+        // Allow requests with no origin (mobile apps, Postman, curl)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            logger.warn(`CORS blocked request from origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true, // Allow cookies/authorization headers
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    maxAge: 600 // Cache preflight requests for 10 minutes
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

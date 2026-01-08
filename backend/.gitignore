@@ -1,5 +1,51 @@
-node_modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
 .env
-uploads
-dist
-coverage
+.env.production
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+dist/
+build/
+*.log
+
+# Prisma
+migrations/
+
+# Uploads
+uploads/
+*.tmp
+
+# Tests
+coverage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.sqlite
+*.db
+
+# Security - Credentials files
+SEEDED_CREDENTIALS.txt
+*.credentials
+*.secret
+
+# Misc
+.cache
+.parcel-cache

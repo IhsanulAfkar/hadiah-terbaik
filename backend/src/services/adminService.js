@@ -2,6 +2,7 @@ const prisma = require('../config/database');
 const bcrypt = require('bcryptjs');
 const AppError = require('../utils/AppError');
 const logger = require('../utils/logger');
+const { generateRandomPassword, logPasswordEvent } = require('../utils/passwordPolicy');
 
 /**
  * Admin Service - Handles admin-specific operations
@@ -26,25 +27,33 @@ const resetUserPassword = async (adminId, userId, newPassword = null) => {
         throw new AppError('User tidak ditemukan', 404);
     }
 
-    // Generate password if not provided
-    const password = newPassword || Math.random().toString(36).slice(-8);
+    // Generate secure random password if not provided
+    const password = newPassword || generateRandomPassword(16);
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Update password
+    // Update password and force user to change it on next login
     await prisma.user.update({
         where: { id: userId },
         data: {
-            password: hashedPassword
+            password: hashedPassword,
+            must_change_password: true,
+            password_changed_at: new Date(),
+            failed_login_attempts: 0,
+            locked_until: null
         }
     });
 
-    logger.info(`Admin ${adminId} reset password for user ${userId}`);
+    logger.info(`Admin ${adminId} reset password for user ${userId} (${user.username})`);
+    logPasswordEvent(userId, 'PASSWORD_RESET_BY_ADMIN', {
+        adminId,
+        username: user.username
+    });
 
     return {
         message: 'Password berhasil direset',
         username: user.username,
-        new_password: password, // Return this to admin to communicate to user
-        warning: 'Simpan password ini dengan aman dan berikan kepada user'
+        new_password: password,
+        warning: 'PENTING: Simpan password ini dengan aman dan berikan kepada user. User WAJIB mengubah password saat login pertama kali.'
     };
 };
 

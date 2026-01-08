@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/database');
+const { validatePassword, isCommonPassword, logPasswordEvent } = require('../utils/passwordPolicy');
+const logger = require('../utils/logger');
 
 const login = async (username, password) => {
     // 1. Find user
@@ -12,13 +14,61 @@ const login = async (username, password) => {
     });
 
     if (!user) {
-        throw new Error('User not found'); // In prod, use generic message
+        throw new Error('Username atau password salah'); // Generic message for security
+    }
+
+    // Check if account is locked
+    if (user.locked_until && new Date() < user.locked_until) {
+        const remainingMinutes = Math.ceil((user.locked_until - new Date()) / 60000);
+        logger.warn(`Login attempt for locked account: ${username}`);
+        throw new Error(`Akun terkunci. Coba lagi dalam ${remainingMinutes} menit`);
     }
 
     // 2. Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-        throw new Error('Invalid credentials');
+        // Increment failed login attempts
+        const newFailedAttempts = (user.failed_login_attempts || 0) + 1;
+        const lockDuration = 15; // minutes
+        const maxAttempts = 5;
+
+        const updateData = {
+            failed_login_attempts: newFailedAttempts
+        };
+
+        // Lock account if too many failed attempts
+        if (newFailedAttempts >= maxAttempts) {
+            updateData.locked_until = new Date(Date.now() + lockDuration * 60 * 1000);
+            logger.warn(`Account locked due to failed attempts: ${username}`);
+        }
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: updateData
+        });
+
+        logPasswordEvent(user.id, 'FAILED_LOGIN', { username, attempts: newFailedAttempts });
+        throw new Error('Username atau password salah');
+    }
+
+    // Login successful - reset failed attempts
+    await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            failed_login_attempts: 0,
+            locked_until: null
+        }
+    });
+
+    // Check if password change is required
+    if (user.must_change_password) {
+        logPasswordEvent(user.id, 'LOGIN_PASSWORD_CHANGE_REQUIRED', { username });
+        return {
+            must_change_password: true,
+            user_id: user.id,
+            username: user.username,
+            message: 'Anda harus mengubah password sebelum melanjutkan'
+        };
     }
 
     // 3. Generate Token with configurable expiry
@@ -36,6 +86,8 @@ const login = async (username, password) => {
             last_login_at: new Date()
         }
     });
+
+    logPasswordEvent(user.id, 'LOGIN_SUCCESS', { username });
 
     // Return user info (excluding password and session token)
     const { password: _, active_session_token: __, ...userInfo } = user;
@@ -98,14 +150,25 @@ const changePassword = async (userId, oldPassword, newPassword) => {
     // Verify old password
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
+        logPasswordEvent(userId, 'PASSWORD_CHANGE_FAILED', { reason: 'Wrong old password' });
         throw new Error('Password lama tidak sesuai');
     }
 
-    // Validate new password
-    if (newPassword.length < 6) {
-        throw new Error('Password baru minimal 6 karakter');
+    // Validate new password complexity
+    const validation = validatePassword(newPassword);
+    if (!validation.valid) {
+        const errorMessage = validation.errors.join(', ');
+        logPasswordEvent(userId, 'PASSWORD_CHANGE_FAILED', { reason: 'Weak password', errors: validation.errors });
+        throw new Error(errorMessage);
     }
 
+    // Check if password is common
+    if (isCommonPassword(newPassword)) {
+        logPasswordEvent(userId, 'PASSWORD_CHANGE_FAILED', { reason: 'Common password' });
+        throw new Error('Password terlalu umum. Gunakan password yang lebih unik dan sulit ditebak');
+    }
+
+    // Check if new password is same as old
     if (oldPassword === newPassword) {
         throw new Error('Password baru harus berbeda dengan password lama');
     }
@@ -113,17 +176,22 @@ const changePassword = async (userId, oldPassword, newPassword) => {
     // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update password
+    // Update password and reset must_change_password flag
     await prisma.user.update({
         where: { id: userId },
         data: {
-            password: hashedPassword
+            password: hashedPassword,
+            password_changed_at: new Date(),
+            must_change_password: false
         }
     });
 
+    logPasswordEvent(userId, 'PASSWORD_CHANGE_SUCCESS', { username: user.username });
+    logger.info(`Password changed successfully for user: ${user.username}`);
+
     return {
         success: true,
-        message: 'Password berhasil diubah'
+        message: 'Password berhasil diubah. Silakan login kembali dengan password baru Anda'
     };
 };
 
