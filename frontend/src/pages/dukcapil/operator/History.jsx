@@ -10,7 +10,7 @@ import Pagination from '../../../components/ui/Pagination';
 import { Card, CardContent } from '../../../components/ui/Card';
 import { Search } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 
 const History = () => {
     const navigate = useNavigate();
