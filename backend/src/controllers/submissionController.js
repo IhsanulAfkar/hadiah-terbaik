@@ -108,7 +108,23 @@ const download = async (req, res) => {
 
         if (inline) {
             // For inline viewing (preview in browser)
-            res.setHeader('Content-Type', 'application/pdf');
+            // Detect content type based on file extension
+            const ext = path.extname(filename).toLowerCase();
+            let contentType = 'application/octet-stream'; // default
+
+            if (ext === '.pdf') {
+                contentType = 'application/pdf';
+            } else if (ext === '.png') {
+                contentType = 'image/png';
+            } else if (ext === '.jpg' || ext === '.jpeg') {
+                contentType = 'image/jpeg';
+            } else if (ext === '.gif') {
+                contentType = 'image/gif';
+            } else if (ext === '.webp') {
+                contentType = 'image/webp';
+            }
+
+            res.setHeader('Content-Type', contentType);
             res.setHeader('Content-Disposition', 'inline');
             res.sendFile(filePath, (err) => {
                 if (err && !res.headersSent) {
