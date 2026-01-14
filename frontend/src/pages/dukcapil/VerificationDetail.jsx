@@ -178,15 +178,30 @@ const VerificationDetail = () => {
                             </div>
                         </div>
                         <div className="flex-shrink-0">
-                            {status === 'SUBMITTED' && (
+                            {/* Case 1: Task is lockable (SUBMITTED or PENDING_VERIFICATION for verifier) and NOT locked yet */}
+                            {((status === 'SUBMITTED') || (status === 'PENDING_VERIFICATION' && isVerifier)) && !submission.current_assignee_id && (
                                 <Button onClick={handleLock} loading={processing} icon={Lock}>
                                     Kunci & Proses
                                 </Button>
                             )}
-                            {status === 'PROCESSING' && (
+
+                            {/* Case 2: Task is locked by ME */}
+                            {submission.current_assignee_id === user.id && (status === 'PROCESSING' || status === 'PENDING_VERIFICATION') && (
                                 <Badge variant="info" icon={User} className="text-sm py-1.5 px-3">
                                     Sedang Anda Proses
                                 </Badge>
+                            )}
+
+                            {/* Case 3: Task is locked by SOMEONE ELSE */}
+                            {submission.current_assignee_id && submission.current_assignee_id !== user.id && (
+                                <div className="flex flex-col items-end">
+                                    <Badge variant="warning" icon={Lock} className="text-sm py-1.5 px-3">
+                                        Sedang Dikunci
+                                    </Badge>
+                                    <span className="text-[10px] text-slate-500 mt-1 italic">
+                                        Oleh: {submission.assignee?.full_name || 'Petugas Lain'}
+                                    </span>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -389,9 +404,8 @@ const VerificationDetail = () => {
                 {/* Right Column: Actions */}
                 <div className="lg:col-span-1 space-y-6">
                     {/* Action buttons for processing submissions */}
-                    {/* Operators can process PROCESSING status */}
-                    {/* Verifiers can process both PROCESSING (operator function) and PENDING_VERIFICATION (verifier function) */}
-                    {(status === 'PROCESSING' || (isVerifier && status === 'PENDING_VERIFICATION')) ? (
+                    {/* ONLY show decision panel if locked by the current user */}
+                    {submission.current_assignee_id === user.id && (status === 'PROCESSING' || (isVerifier && status === 'PENDING_VERIFICATION')) ? (
                         <Card className="sticky top-6 border-l-4 border-l-primary-500 shadow-md">
                             <CardHeader>
                                 <CardTitle className="text-lg">
@@ -439,14 +453,42 @@ const VerificationDetail = () => {
                                 </div>
                             </CardContent>
                         </Card>
-                    ) : (status !== 'SUBMITTED' && status !== 'PROCESSING' && status !== 'PENDING_VERIFICATION') && (
-                        <Card className="bg-slate-50 border-slate-200">
-                            <CardContent className="p-6 text-center">
-                                <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                                <h3 className="text-lg font-medium text-slate-900">Proses Selesai</h3>
-                                <p className="text-sm text-slate-500 mt-1">Pengajuan ini telah selesai diproses.</p>
-                            </CardContent>
-                        </Card>
+                    ) : (
+                        /* Show "Kunci dulu" message if it's lockable but not locked by me */
+                        ((status === 'SUBMITTED') || (status === 'PENDING_VERIFICATION' && isVerifier)) && !submission.current_assignee_id ? (
+                            <Card className="sticky top-6 bg-blue-50 border-blue-200">
+                                <CardContent className="p-6 text-center">
+                                    <Lock className="w-12 h-12 text-blue-500 mx-auto mb-3" />
+                                    <h3 className="text-lg font-medium text-blue-900">Kunci Pengajuan</h3>
+                                    <p className="text-sm text-blue-700 mt-1 mb-4">Anda harus mengunci pengajuan ini terlebih dahulu sebelum dapat memberikan keputusan.</p>
+                                    <Button onClick={handleLock} loading={processing} icon={Lock} className="w-full">
+                                        Kunci & Proses Sekarang
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            /* Case: Locked by others */
+                            submission.current_assignee_id && submission.current_assignee_id !== user.id ? (
+                                <Card className="sticky top-6 bg-slate-50 border-slate-200">
+                                    <CardContent className="p-6 text-center">
+                                        <Lock className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                                        <h3 className="text-lg font-medium text-slate-900">Sedang Dikunci</h3>
+                                        <p className="text-sm text-slate-500 mt-1">Pengajuan ini sedang diproses oleh petugas lain.</p>
+                                        <div className="mt-4 p-2 bg-white rounded border border-slate-100 text-xs font-semibold text-slate-700">
+                                            {submission.assignee?.full_name || 'Petugas Lain'}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ) : (status !== 'SUBMITTED' && status !== 'PROCESSING' && status !== 'PENDING_VERIFICATION') && (
+                                <Card className="bg-slate-50 border-slate-200">
+                                    <CardContent className="p-6 text-center">
+                                        <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                                        <h3 className="text-lg font-medium text-slate-900">Proses Selesai</h3>
+                                        <p className="text-sm text-slate-500 mt-1">Pengajuan ini telah selesai diproses.</p>
+                                    </CardContent>
+                                </Card>
+                            )
+                        )
                     )}
 
                     <Alert variant="info" title="Petunjuk Verifikasi">

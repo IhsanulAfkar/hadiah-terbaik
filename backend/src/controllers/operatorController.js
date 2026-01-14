@@ -39,7 +39,7 @@ const getQueue = async (req, res) => {
 const assignSubmission = async (req, res) => {
     try {
         const { id } = req.params;
-        const result = await operatorService.assignSubmission(id, req.user.id);
+        const result = await operatorService.assignSubmission(id, req.user.id, req.user.role);
         res.json({
             success: true,
             message: 'Pengajuan berhasil diklaim',

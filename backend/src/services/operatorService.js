@@ -105,13 +105,14 @@ const getQueue = async (status = 'SUBMITTED', page = 1, assigneeId = null) => {
 };
 
 /**
- * Assign (lock) submission to operator
+ * Assign (lock) submission to operator or verifier
  * 
  * @param {string} submissionId - Submission ID
- * @param {string} operatorId - Operator user ID
+ * @param {string} userId - User ID (Operator or Verifier)
+ * @param {string} userRole - User Role
  * @returns {Object} - Updated submission
  */
-const assignSubmission = async (submissionId, operatorId) => {
+const assignSubmission = async (submissionId, userId, userRole) => {
     // Check if submission exists
     const submission = await prisma.permohonan.findUnique({
         where: { id: submissionId },
@@ -122,28 +123,46 @@ const assignSubmission = async (submissionId, operatorId) => {
         throw new AppError('Pengajuan tidak ditemukan', 404);
     }
 
-    // Check if submission is in correct status
-    if (submission.status !== 'SUBMITTED') {
+    // Determine if locking is allowed and what the new status should be
+    // 1. SUBMITTED: Any role can lock, becomes PROCESSING
+    // 2. PENDING_VERIFICATION: Only VERIFIER can lock, stays PENDING_VERIFICATION
+
+    let newStatus = submission.status;
+    let isAllowed = false;
+
+    if (submission.status === 'SUBMITTED') {
+        newStatus = 'PROCESSING';
+        isAllowed = true;
+    } else if (submission.status === 'PENDING_VERIFICATION') {
+        if (userRole === 'VERIFIKATOR_DUKCAPIL') {
+            isAllowed = true;
+            // status remains PENDING_VERIFICATION
+        } else {
+            throw new AppError('Hanya verifikator yang dapat mengunci pengajuan di tahap verifikasi', 403);
+        }
+    }
+
+    if (!isAllowed) {
         throw new AppError(
-            `Pengajuan tidak dapat diklaim. Status saat ini: ${submission.status}. Hanya pengajuan dengan status SUBMITTED yang dapat diklaim.`,
+            `Pengajuan tidak dapat dikunci. Status saat ini: ${submission.status}.`,
             400
         );
     }
 
-    // Check if already assigned to another operator
-    if (submission.current_assignee_id && submission.current_assignee_id !== operatorId) {
+    // Check if already assigned to another user
+    if (submission.current_assignee_id && submission.current_assignee_id !== userId) {
         throw new AppError(
-            `Pengajuan sudah diklaim oleh operator lain: ${submission.assignee.full_name}`,
+            `Pengajuan sudah dikunci oleh user lain: ${submission.assignee?.full_name || 'Petugas lain'}`,
             409
         );
     }
 
-    // Assign to operator and change status to PROCESSING
+    // Assign to user and update status if needed
     const updated = await prisma.permohonan.update({
         where: { id: submissionId },
         data: {
-            current_assignee_id: operatorId,
-            status: 'PROCESSING'
+            current_assignee_id: userId,
+            status: newStatus
         },
         include: {
             creator: true,
@@ -156,14 +175,16 @@ const assignSubmission = async (submissionId, operatorId) => {
     await prisma.statusLog.create({
         data: {
             permohonan_id: submissionId,
-            actor_id: operatorId,
-            previous_status: 'SUBMITTED',
-            new_status: 'PROCESSING',
-            notes: 'Pengajuan diklaim oleh operator'
+            actor_id: userId,
+            previous_status: submission.status,
+            new_status: newStatus,
+            notes: submission.status === newStatus
+                ? 'Pengajuan dikunci untuk verifikasi'
+                : 'Pengajuan diklaim dan mulai diproses'
         }
     });
 
-    logger.info(`Operator ${operatorId} assigned submission ${submissionId}`);
+    logger.info(`${userRole} ${userId} assigned submission ${submissionId}`);
 
     return updated;
 };
