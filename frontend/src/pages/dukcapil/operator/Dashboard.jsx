@@ -19,6 +19,7 @@ const OperatorDashboard = () => {
         sentToVerification: 0
     });
     const [myQueue, setMyQueue] = useState([]);
+    const [incomingQueue, setIncomingQueue] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -34,13 +35,18 @@ const OperatorDashboard = () => {
                 }
 
                 // Fetch "My Work" - submissions that are PROCESSING or PENDING_VERIFICATION and assigned to ME
-                const resQueue = await api.get('/dukcapil/operator/queue?status=PROCESSING,PENDING_VERIFICATION&mine=true&limit=5');
-                // Backend returns { data: { data: [], pagination: {} } }
-                const queueData = resQueue.data.success ? resQueue.data.data : null;
-                const items = queueData?.data || [];
-                setMyQueue(Array.isArray(items) ? items : []);
+                const mineStatus = user.role === 'OPERATOR_DUKCAPIL' ? 'PROCESSING' : 'PENDING_VERIFICATION';
+                const resMyQueue = await api.get(`/dukcapil/operator/queue?status=${mineStatus}&mine=true&limit=5`);
+                const myQueueItems = resMyQueue.data.success ? resMyQueue.data.data?.data || [] : [];
+                setMyQueue(myQueueItems);
+
+                // Fetch "Incoming Queue" - items waiting to be picked up
+                const incomingStatus = user.role === 'OPERATOR_DUKCAPIL' ? 'SUBMITTED' : 'PENDING_VERIFICATION';
+                const resIncoming = await api.get(`/dukcapil/operator/queue?status=${incomingStatus}&mine=false&limit=5`);
+                const incomingItems = resIncoming.data.success ? resIncoming.data.data?.data || [] : [];
+                setIncomingQueue(incomingItems);
             } catch (error) {
-                console.error('Failed to fetch operator data', error);
+                console.error('Failed to fetch dashboard data', error);
             } finally {
                 setLoading(false);
             }
@@ -64,11 +70,11 @@ const OperatorDashboard = () => {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard
-                    title="Antrian Menunggu"
+                    title={user.role === 'OPERATOR_DUKCAPIL' ? "Antrian Menunggu" : "Menunggu Verifikasi"}
                     value={stats.submitted}
                     icon={Users}
                     color="blue"
-                    onClick={() => navigate('/dukcapil/queue')}
+                    onClick={() => navigate(user.role === 'OPERATOR_DUKCAPIL' ? '/dukcapil/queue' : '/dukcapil/verification-queue')}
                 />
                 <StatCard
                     title="Sedang Diproses"
@@ -78,129 +84,157 @@ const OperatorDashboard = () => {
                     onClick={() => navigate('/dukcapil/my-work')}
                 />
                 <StatCard
-                    title="Dikirim Hari Ini"
+                    title={user.role === 'OPERATOR_DUKCAPIL' ? "Dikirim Hari Ini" : "Disetujui Hari Ini"}
                     value={stats.sentToVerification}
                     icon={Send}
                     color="emerald"
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Content: My Work */}
-                <div className="lg:col-span-2">
-                    <Card className="h-full">
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                                <Clock className="w-5 h-5 text-primary-500" />
-                                Pekerjaan Saya
-                            </CardTitle>
-                            <Badge variant="secondary">{myQueue.length} Item</Badge>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Tiket</TableHead>
-                                        <TableHead>Pasangan</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">Aksi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {myQueue.length === 0 ? (
-                                        <TableEmpty colSpan={4} message="Tidak ada pekerjaan aktif" />
-                                    ) : (
-                                        myQueue.map((item) => (
-                                            <TableRow key={item.id}>
-                                                <TableCell className="font-mono text-xs font-semibold text-primary-600">
-                                                    #{item.ticket_number}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="text-sm font-medium text-slate-900">
-                                                        {item.data_pernikahan?.husband_name} & {item.data_pernikahan?.wife_name}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    {item.status === 'PROCESSING' ? (
-                                                        <Badge variant="warning">Sedang Diproses</Badge>
-                                                    ) : (
-                                                        <Badge variant="default" className="bg-yellow-100 text-yellow-800 border-yellow-200">Menunggu Verifikasi</Badge>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <Button
-                                                        size="sm"
-                                                        variant={item.status === 'PROCESSING' ? 'primary' : 'outline'}
-                                                        onClick={() => navigate(`/dukcapil/process/${item.id}`)}
-                                                    >
-                                                        {item.status === 'PROCESSING' ? 'Lanjut' : 'Lihat'}
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
-                            {myQueue.length === 0 && (
-                                <div className="mt-4 text-center">
-                                    <Button variant="outline" onClick={() => navigate('/dukcapil/queue')}>
-                                        Ambil Antrian Baru
-                                    </Button>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+            {/* Quick Actions Bar */}
+            <div className="flex flex-wrap gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm items-center">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mr-2 ml-2">Aksi Cepat:</span>
+                <Button variant="outline" size="sm" onClick={() => navigate(user.role === 'OPERATOR_DUKCAPIL' ? '/dukcapil/queue' : '/dukcapil/verification-queue')} className="gap-2">
+                    <Users className="w-4 h-4" /> Antrian Masuk
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate('/dukcapil/my-work')} className="gap-2">
+                    <Clock className="w-4 h-4" /> Pekerjaan Saya
+                </Button>
+                <div className="h-6 w-px bg-slate-200 mx-2"></div>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/dukcapil/history')} className="gap-2">
+                    Riwayat
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/dukcapil/laporan')} className="gap-2">
+                    Laporan
+                </Button>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                {/* Left: My Work */}
+                <Card className="flex flex-col border-l-4 border-l-amber-500">
+                    <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-50">
+                        <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                            <Clock className="w-5 h-5 text-amber-500" />
+                            Pekerjaan Saya
+                        </CardTitle>
+                        <Badge variant="warning">{myQueue.length} Aktif</Badge>
+                    </CardHeader>
+                    <CardContent className="pt-4 px-0">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="pl-6">Tiket</TableHead>
+                                    <TableHead>Pasangan</TableHead>
+                                    <TableHead className="text-right pr-6">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {myQueue.length === 0 ? (
+                                    <TableEmpty colSpan={3} message="Belum ada pekerjaan yang dikunci" />
+                                ) : (
+                                    myQueue.map((item) => (
+                                        <TableRow key={item.id}>
+                                            <TableCell className="pl-6 font-mono text-xs font-semibold text-primary-600">
+                                                #{item.ticket_number}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="text-sm font-medium text-slate-900 truncate max-w-[150px]">
+                                                    {item.data_pernikahan?.husband_name}
+                                                </div>
+                                                <div className="text-[10px] text-slate-400">& {item.data_pernikahan?.wife_name}</div>
+                                            </TableCell>
+                                            <TableCell className="text-right pr-6">
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => navigate(`/dukcapil/process/${item.id}`)}
+                                                >
+                                                    Lanjut
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+
+                {/* Right: Incoming Queue */}
+                <Card className="flex flex-col border-l-4 border-l-blue-500">
+                    <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-50">
+                        <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                            <Users className="w-5 h-5 text-blue-500" />
+                            Antrian Masuk
+                        </CardTitle>
+                        <Button variant="ghost" size="sm" onClick={() => navigate(user.role === 'OPERATOR_DUKCAPIL' ? '/dukcapil/queue' : '/dukcapil/verification-queue')} className="text-xs text-primary-600">Lihat Semua</Button>
+                    </CardHeader>
+                    <CardContent className="pt-4 px-0">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="pl-6">Tiket</TableHead>
+                                    <TableHead>Pasangan</TableHead>
+                                    <TableHead className="text-right pr-6">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {incomingQueue.length === 0 ? (
+                                    <TableEmpty colSpan={3} message="Belum ada antrian masuk" />
+                                ) : (
+                                    incomingQueue.map((item) => (
+                                        <TableRow key={item.id}>
+                                            <TableCell className="pl-6 font-mono text-xs font-semibold text-slate-500">
+                                                #{item.ticket_number}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="text-sm font-medium text-slate-900 truncate max-w-[150px]">
+                                                    {item.data_pernikahan?.husband_name}
+                                                </div>
+                                                <div className="text-[10px] text-slate-400">& {item.data_pernikahan?.wife_name}</div>
+                                            </TableCell>
+                                            <TableCell className="text-right pr-6">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => navigate(user.role === 'OPERATOR_DUKCAPIL' ? `/dukcapil/process/${item.id}` : `/dukcapil/verify/${item.id}`)}
+                                                >
+                                                    Detail
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Bottom: Guide Banner */}
+            <div className={`bg-slate-900 rounded-2xl p-8 text-white relative overflow-hidden shadow-xl border-t-4 ${user.role === 'OPERATOR_DUKCAPIL' ? 'border-t-primary-500' : 'border-t-indigo-500'}`}>
+                <div className="absolute top-0 right-0 p-8 opacity-20 transform translate-x-1/4 -translate-y-1/4">
+                    <Wrench className={`w-64 h-64 ${user.role === 'OPERATOR_DUKCAPIL' ? 'text-primary-500' : 'text-indigo-500'}`} />
                 </div>
 
-                {/* Right Column: Guide */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-gradient-to-br from-primary-600 to-primary-800 rounded-xl shadow-lg p-6 text-white relative overflow-hidden">
-                        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-
-                        <h3 className="text-lg font-bold mb-3 flex items-center gap-2 relative z-10">
-                            <Wrench className="w-5 h-5" />
-                            Panduan Operator
-                        </h3>
-                        <p className="text-primary-100 text-sm mb-6 leading-relaxed relative z-10">
-                            Pastikan kelengkapan dokumen fisik dan digital sebelum mengirim ke verifikator.
-                        </p>
-                        <ul className="space-y-3 text-sm relative z-10">
-                            <li className="flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 bg-primary-200 rounded-full"></span>
-                                <span className="text-primary-50">Periksa kelengkapan dokumen</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 bg-primary-200 rounded-full"></span>
-                                <span className="text-primary-50">Validasi kesesuaian data</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 bg-primary-200 rounded-full"></span>
-                                <span className="text-primary-50">Submit untuk verifikasi akhir</span>
-                            </li>
-                        </ul>
+                <div className="relative z-10 max-w-2xl">
+                    <div className={`${user.role === 'OPERATOR_DUKCAPIL' ? 'bg-primary-500/20 text-primary-400' : 'bg-indigo-500/20 text-indigo-400'} px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-2 mb-4 uppercase tracking-wider`}>
+                        <Wrench className="w-3 h-3" /> Panduan {user.role === 'OPERATOR_DUKCAPIL' ? 'Operator' : 'Verifikator'}
                     </div>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm uppercase tracking-wide text-slate-500">Aksi Cepat</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            <Button
-                                variant="secondary"
-                                className="w-full justify-start"
-                                onClick={() => navigate('/dukcapil/queue')}
-                            >
-                                Lihat Antrian Masuk
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="w-full justify-start"
-                                onClick={() => navigate('/dukcapil/my-work')}
-                            >
-                                Pekerjaan Saya
-                            </Button>
-                        </CardContent>
-                    </Card>
+                    <h2 className="text-2xl font-bold mb-4">{user.role === 'OPERATOR_DUKCAPIL' ? 'Prosedur Pengolahan Data' : 'Prosedur Verifikasi Akhir'}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                            <div className={`${user.role === 'OPERATOR_DUKCAPIL' ? 'text-primary-400' : 'text-indigo-400'} font-bold mb-1`}>01. {user.role === 'OPERATOR_DUKCAPIL' ? 'Validasi' : 'Cek NIK'}</div>
+                            <p className="text-slate-400 text-xs">{user.role === 'OPERATOR_DUKCAPIL' ? 'Pastikan kelengkapan dokumen scan KUA.' : 'Validasi data NIK dengan SIAK Terpusat.'}</p>
+                        </div>
+                        <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                            <div className={`${user.role === 'OPERATOR_DUKCAPIL' ? 'text-primary-400' : 'text-indigo-400'} font-bold mb-1`}>02. {user.role === 'OPERATOR_DUKCAPIL' ? 'Input' : 'Dokumen'}</div>
+                            <p className="text-slate-400 text-xs">{user.role === 'OPERATOR_DUKCAPIL' ? 'Sesuaikan data kependudukan pendukung.' : 'Periksa keaslian dokumen lampiran.'}</p>
+                        </div>
+                        <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                            <div className={`${user.role === 'OPERATOR_DUKCAPIL' ? 'text-primary-400' : 'text-indigo-400'} font-bold mb-1`}>03. {user.role === 'OPERATOR_DUKCAPIL' ? 'Kirim' : 'Putusan'}</div>
+                            <p className="text-slate-400 text-xs">{user.role === 'OPERATOR_DUKCAPIL' ? 'Teruskan ke verifikator untuk disetujui.' : 'Berikan persetujuan atau tolak pengajuan.'}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
