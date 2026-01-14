@@ -39,14 +39,14 @@ const MyWork = () => {
         // Differentiate between processing work and verification work
         if (status === 'PROCESSING') {
             return {
-                label: 'Pengolahan',
+                label: 'Antrian Pengajuan',
                 description: 'Sedang Diproses',
                 icon: '⚙️',
                 badgeClass: 'bg-blue-50 text-blue-700'
             };
         } else if (status === 'PENDING_VERIFICATION') {
             return {
-                label: 'Verifikasi',
+                label: 'Antrian Verifikasi',
                 description: 'Menunggu Verifikasi',
                 icon: '🔍',
                 badgeClass: 'bg-yellow-50 text-yellow-700'

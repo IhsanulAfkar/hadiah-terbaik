@@ -146,9 +146,9 @@ const OperatorDashboard = () => {
                                             </TableCell>
                                             <TableCell>
                                                 {item.status === 'PENDING_VERIFICATION' ? (
-                                                    <Badge variant="default" className="text-[10px] bg-indigo-50 text-indigo-700 border-indigo-100">Verifikasi</Badge>
+                                                    <Badge variant="default" className="text-[10px] bg-indigo-50 text-indigo-700 border-indigo-100">Antrian Verifikasi</Badge>
                                                 ) : (
-                                                    <Badge variant="default" className="text-[10px] bg-amber-50 text-amber-700 border-amber-100">Pengolahan</Badge>
+                                                    <Badge variant="default" className="text-[10px] bg-amber-50 text-amber-700 border-amber-100">Antrian Pengajuan</Badge>
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right pr-6">
@@ -203,9 +203,9 @@ const OperatorDashboard = () => {
                                             </TableCell>
                                             <TableCell>
                                                 {item.status === 'PENDING_VERIFICATION' ? (
-                                                    <Badge variant="default" className="text-[10px] bg-indigo-50 text-indigo-700 border-indigo-100">Verifikasi</Badge>
+                                                    <Badge variant="default" className="text-[10px] bg-indigo-50 text-indigo-700 border-indigo-100">Antrian Verifikasi</Badge>
                                                 ) : (
-                                                    <Badge variant="default" className="text-[10px] bg-blue-50 text-blue-700 border-blue-100">Pengolahan</Badge>
+                                                    <Badge variant="default" className="text-[10px] bg-blue-50 text-blue-700 border-blue-100">Antrian Pengajuan</Badge>
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right pr-6">

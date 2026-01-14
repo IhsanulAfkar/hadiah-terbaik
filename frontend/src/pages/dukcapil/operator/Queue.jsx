@@ -127,11 +127,11 @@ const OperatorQueue = () => {
                                     <TableCell>
                                         {item.status === 'PENDING_VERIFICATION' ? (
                                             <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                                Verifikasi
+                                                Antrian Verifikasi
                                             </span>
                                         ) : (
                                             <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                                                Pengolahan
+                                                Antrian Pengajuan
                                             </span>
                                         )}
                                     </TableCell>
