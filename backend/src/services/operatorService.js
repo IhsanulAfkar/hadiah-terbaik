@@ -124,15 +124,19 @@ const assignSubmission = async (submissionId, userId, userRole) => {
     }
 
     // Determine if locking is allowed and what the new status should be
-    // 1. SUBMITTED: Any role can lock, becomes PROCESSING
-    // 2. PENDING_VERIFICATION: Only VERIFIER can lock, stays PENDING_VERIFICATION
+    // 1. SUBMITTED: ONLY OPERATOR can lock, becomes PROCESSING
+    // 2. PENDING_VERIFICATION: ONLY VERIFIER can lock, stays PENDING_VERIFICATION
 
     let newStatus = submission.status;
     let isAllowed = false;
 
     if (submission.status === 'SUBMITTED') {
-        newStatus = 'PROCESSING';
-        isAllowed = true;
+        if (userRole === 'OPERATOR_DUKCAPIL') {
+            newStatus = 'PROCESSING';
+            isAllowed = true;
+        } else {
+            throw new AppError('Hanya operator yang dapat mengunci pengajuan baru', 403);
+        }
     } else if (submission.status === 'PENDING_VERIFICATION') {
         if (userRole === 'VERIFIKATOR_DUKCAPIL') {
             isAllowed = true;
@@ -354,13 +358,14 @@ const sendToVerification = async (submissionId, operatorId, notes = '') => {
 };
 
 /**
- * Get operator performance reports
+ * Get unified dukcapil performance reports (Operator or Verifier)
  * 
- * @param {string} operatorId - Operator user ID
- * @param {string} period - Time period (week, month, year, all)
+ * @param {string} userId - User ID
+ * @param {string} period - Time period
+ * @param {string} userRole - User Role
  * @returns {Object} - Performance statistics
  */
-const getOperatorReports = async (operatorId, period = 'month') => {
+const getOperatorReports = async (userId, period = 'month', userRole = 'OPERATOR_DUKCAPIL') => {
     // Calculate date range based on period
     const now = new Date();
     let startDate;
@@ -379,70 +384,67 @@ const getOperatorReports = async (operatorId, period = 'month') => {
             startDate = new Date(0); // All time
     }
 
-    // Get submissions processed by this operator
-    const processedSubmissions = await prisma.statusLog.findMany({
-        where: {
-            actor_id: operatorId,
-            new_status: {
-                in: ['PENDING_VERIFICATION', 'NEEDS_REVISION']
-            },
-            created_at: {
-                gte: startDate
-            }
-        },
-        include: {
-            permohonan: true
-        }
-    });
+    const isOperator = userRole === 'OPERATOR_DUKCAPIL';
 
-    // Get current queue counts (Real-time)
-    // 1. SUBMITTED: Waiting for any operator (Global Queue)
-    const queueCount = await prisma.permohonan.count({
-        where: {
-            status: 'SUBMITTED'
-        }
-    });
+    // 1. Get Incoming Queue Count (Items waiting for ANY user of this role)
+    const queueQuery = {
+        status: isOperator ? 'SUBMITTED' : 'PENDING_VERIFICATION'
+    };
 
-    // 2. PROCESSING: Assigned to THIS operator
+    // For Verifiers, only count ones that ARE NOT yet locked by someone else 
+    // (Or should we show all PENDING_VERIFICATION as 'Antrian'?)
+    // Let's show all that aren't locked by them specifically, but actually 'Antrian Masuk' 
+    // usually means 'Waiting to be picked up'.
+    queueQuery.current_assignee_id = null;
+
+    const queueCount = await prisma.permohonan.count({ where: queueQuery });
+
+    // 2. Get Processing Count (Items currently locked by THIS user)
+    const processingStatus = isOperator ? 'PROCESSING' : 'PENDING_VERIFICATION';
     const processingCount = await prisma.permohonan.count({
         where: {
-            status: 'PROCESSING',
-            current_assignee_id: operatorId
+            status: processingStatus,
+            current_assignee_id: userId
         }
     });
 
-    // 3. Completed Today (Sent to verification OR returned)
+    // 3. Completed Today (Historical)
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
+    const completedTodayStatuses = isOperator
+        ? ['PENDING_VERIFICATION', 'NEEDS_REVISION']
+        : ['APPROVED', 'REJECTED'];
+
     const completedTodayCount = await prisma.statusLog.count({
         where: {
-            actor_id: operatorId,
-            new_status: {
-                in: ['PENDING_VERIFICATION', 'NEEDS_REVISION']
-            },
-            created_at: {
-                gte: startOfToday
-            }
+            actor_id: userId,
+            new_status: { in: completedTodayStatuses },
+            created_at: { gte: startOfToday }
         }
     });
 
-    // Calculate statistics
-    const stats = {
+    // 4. Historical Period Stats
+    const processedSubmissions = await prisma.statusLog.findMany({
+        where: {
+            actor_id: userId,
+            new_status: { in: completedTodayStatuses },
+            created_at: { gte: startDate }
+        }
+    });
+
+    return {
+        // Real-time Dashboard Cards
+        queue: queueCount,           // Antrian Masuk
+        processing: processingCount, // Sedang Diproses
+        completedToday: completedTodayCount, // Selesai Hari Ini
+
         // Historical / Period stats
         total_processed: processedSubmissions.length,
-        sent_to_verification: processedSubmissions.filter(log => log.new_status === 'PENDING_VERIFICATION').length,
-        returned_to_kua: processedSubmissions.filter(log => log.new_status === 'NEEDS_REVISION').length,
         period,
-        operator_id: operatorId,
-
-        // Real-time Dashboard Cards
-        queue: queueCount,           // Antrian Menunggu (Global)
-        processing: processingCount, // Sedang Diproses (My Work)
-        completedToday: completedTodayCount // Dikirim Hari Ini
+        user_id: userId,
+        role: userRole
     };
-
-    return stats;
 };
 
 module.exports = {

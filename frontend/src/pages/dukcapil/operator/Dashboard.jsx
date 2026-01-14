@@ -47,14 +47,18 @@ const OperatorDashboard = () => {
                     });
                 }
 
-                // Fetch "My Work" - submissions that are PROCESSING or PENDING_VERIFICATION and assigned to ME
-                const mineStatus = user.role === 'OPERATOR_DUKCAPIL' ? 'PROCESSING' : 'PROCESSING,PENDING_VERIFICATION';
+                // Fetch "My Work" - submissions that are actively locked by ME
+                // Operators: current state is PROCESSING
+                // Verifiers: current state is PENDING_VERIFICATION
+                const mineStatus = user.role === 'OPERATOR_DUKCAPIL' ? 'PROCESSING' : 'PENDING_VERIFICATION';
                 const resMyQueue = await api.get(`/dukcapil/operator/queue?status=${mineStatus}&mine=true&limit=5`);
                 const myQueueItems = resMyQueue.data.success ? resMyQueue.data.data?.data || [] : [];
                 setMyQueue(myQueueItems);
 
                 // Fetch "Incoming Queue" - items waiting to be picked up
-                const incomingStatus = user.role === 'OPERATOR_DUKCAPIL' ? 'SUBMITTED' : 'SUBMITTED,PENDING_VERIFICATION';
+                // Operators: waiting for pick up from SUBMITTED
+                // Verifiers: waiting for pick up from PENDING_VERIFICATION
+                const incomingStatus = user.role === 'OPERATOR_DUKCAPIL' ? 'SUBMITTED' : 'PENDING_VERIFICATION';
                 const resIncoming = await api.get(`/dukcapil/operator/queue?status=${incomingStatus}&mine=false&limit=5`);
                 const incomingItems = resIncoming.data.success ? resIncoming.data.data?.data || [] : [];
                 setIncomingQueue(incomingItems);

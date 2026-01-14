@@ -162,7 +162,7 @@ const sendToVerification = async (req, res) => {
 const getReports = async (req, res) => {
     try {
         const period = req.query.period || 'month';
-        const result = await operatorService.getOperatorReports(req.user.id, period);
+        const result = await operatorService.getOperatorReports(req.user.id, period, req.user.role);
         res.json({ success: true, data: result });
     } catch (error) {
         res.status(error.statusCode || 500).json({

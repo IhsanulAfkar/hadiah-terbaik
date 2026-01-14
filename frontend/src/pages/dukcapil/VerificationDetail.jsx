@@ -178,8 +178,8 @@ const VerificationDetail = () => {
                             </div>
                         </div>
                         <div className="flex-shrink-0">
-                            {/* Case 1: Task is lockable (SUBMITTED or PENDING_VERIFICATION for verifier) AND (not locked OR locked by me but still in SUBMITTED/PENDING state) */}
-                            {((status === 'SUBMITTED') || (status === 'PENDING_VERIFICATION' && isVerifier)) &&
+                            {/* Case 1: Task is lockable based on role AND (not locked OR locked by me but still in initial state) */}
+                            {((status === 'SUBMITTED' && isOperator) || (status === 'PENDING_VERIFICATION' && isVerifier)) &&
                                 (!submission.current_assignee_id || submission.current_assignee_id === user.id) && (
                                     <Button onClick={handleLock} loading={processing} icon={Lock}>
                                         Kunci & Proses
@@ -458,8 +458,8 @@ const VerificationDetail = () => {
                             </CardContent>
                         </Card>
                     ) : (
-                        /* Show "Kunci dulu" message if it's lockable but NOT locked by me in active state */
-                        ((status === 'SUBMITTED') || (status === 'PENDING_VERIFICATION' && isVerifier)) ? (
+                        /* Show "Kunci dulu" message if it's lockable for THIS role but NOT locked by me in active state */
+                        ((status === 'SUBMITTED' && isOperator) || (status === 'PENDING_VERIFICATION' && isVerifier)) ? (
                             <Card className="sticky top-6 bg-blue-50 border-blue-200">
                                 <CardContent className="p-6 text-center">
                                     <Lock className="w-12 h-12 text-blue-500 mx-auto mb-3" />
