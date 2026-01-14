@@ -149,7 +149,10 @@ const updateSubmission = async (id, userId, dataPernikahan, files) => {
         // If it was REJECTED, we reset to SUBMITTED so Dukcapil sees it again.
         const updatedPermohonan = await tx.permohonan.update({
             where: { id },
-            data: { status: 'SUBMITTED' } // Always reset to SUBMITTED on update
+            data: {
+                status: 'SUBMITTED',
+                current_assignee_id: null // Clear any old locks
+            } // Always reset to SUBMITTED on update
         });
 
         // 5. Audit Log

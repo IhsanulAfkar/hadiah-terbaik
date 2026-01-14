@@ -178,15 +178,16 @@ const VerificationDetail = () => {
                             </div>
                         </div>
                         <div className="flex-shrink-0">
-                            {/* Case 1: Task is lockable (SUBMITTED or PENDING_VERIFICATION for verifier) and NOT locked yet */}
-                            {((status === 'SUBMITTED') || (status === 'PENDING_VERIFICATION' && isVerifier)) && !submission.current_assignee_id && (
-                                <Button onClick={handleLock} loading={processing} icon={Lock}>
-                                    Kunci & Proses
-                                </Button>
-                            )}
+                            {/* Case 1: Task is lockable (SUBMITTED or PENDING_VERIFICATION for verifier) AND (not locked OR locked by me but still in SUBMITTED/PENDING state) */}
+                            {((status === 'SUBMITTED') || (status === 'PENDING_VERIFICATION' && isVerifier)) &&
+                                (!submission.current_assignee_id || submission.current_assignee_id === user.id) && (
+                                    <Button onClick={handleLock} loading={processing} icon={Lock}>
+                                        Kunci & Proses
+                                    </Button>
+                                )}
 
-                            {/* Case 2: Task is locked by ME */}
-                            {submission.current_assignee_id === user.id && (status === 'PROCESSING' || status === 'PENDING_VERIFICATION') && (
+                            {/* Case 2: Task is locked by ME and in active processing state */}
+                            {submission.current_assignee_id === user.id && (status === 'PROCESSING' || (isVerifier && status === 'PENDING_VERIFICATION' && submission.status === 'PENDING_VERIFICATION')) && (
                                 <Badge variant="info" icon={User} className="text-sm py-1.5 px-3">
                                     Sedang Anda Proses
                                 </Badge>
@@ -404,8 +405,11 @@ const VerificationDetail = () => {
                 {/* Right Column: Actions */}
                 <div className="lg:col-span-1 space-y-6">
                     {/* Action buttons for processing submissions */}
-                    {/* ONLY show decision panel if locked by the current user */}
-                    {submission.current_assignee_id === user.id && (status === 'PROCESSING' || (isVerifier && status === 'PENDING_VERIFICATION')) ? (
+                    {/* ONLY show decision panel if locked by the current user AND in correct processing status */}
+                    {submission.current_assignee_id === user.id && (
+                        (status === 'PROCESSING') ||
+                        (isVerifier && status === 'PENDING_VERIFICATION')
+                    ) ? (
                         <Card className="sticky top-6 border-l-4 border-l-primary-500 shadow-md">
                             <CardHeader>
                                 <CardTitle className="text-lg">
@@ -454,40 +458,37 @@ const VerificationDetail = () => {
                             </CardContent>
                         </Card>
                     ) : (
-                        /* Show "Kunci dulu" message if it's lockable but not locked by me */
-                        ((status === 'SUBMITTED') || (status === 'PENDING_VERIFICATION' && isVerifier)) && !submission.current_assignee_id ? (
+                        /* Show "Kunci dulu" message if it's lockable but NOT locked by me in active state */
+                        ((status === 'SUBMITTED') || (status === 'PENDING_VERIFICATION' && isVerifier)) ? (
                             <Card className="sticky top-6 bg-blue-50 border-blue-200">
                                 <CardContent className="p-6 text-center">
                                     <Lock className="w-12 h-12 text-blue-500 mx-auto mb-3" />
                                     <h3 className="text-lg font-medium text-blue-900">Kunci Pengajuan</h3>
-                                    <p className="text-sm text-blue-700 mt-1 mb-4">Anda harus mengunci pengajuan ini terlebih dahulu sebelum dapat memberikan keputusan.</p>
-                                    <Button onClick={handleLock} loading={processing} icon={Lock} className="w-full">
-                                        Kunci & Proses Sekarang
-                                    </Button>
+                                    <p className="text-sm text-blue-700 mt-1 mb-4">
+                                        {submission.current_assignee_id && submission.current_assignee_id !== user.id
+                                            ? `Sedang dikunci oleh ${submission.assignee?.full_name || 'petugas lain'}.`
+                                            : 'Anda harus mengunci pengajuan ini terlebih dahulu sebelum dapat memberikan keputusan.'}
+                                    </p>
+                                    {(!submission.current_assignee_id || submission.current_assignee_id === user.id) && (
+                                        <Button onClick={handleLock} loading={processing} icon={Lock} className="w-full">
+                                            Kunci & Proses Sekarang
+                                        </Button>
+                                    )}
+                                    {submission.current_assignee_id && submission.current_assignee_id !== user.id && (
+                                        <div className="p-2 bg-white rounded border border-blue-100 text-xs font-semibold text-blue-700">
+                                            Petugas: {submission.assignee?.full_name || 'Lainnya'}
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
-                        ) : (
-                            /* Case: Locked by others */
-                            submission.current_assignee_id && submission.current_assignee_id !== user.id ? (
-                                <Card className="sticky top-6 bg-slate-50 border-slate-200">
-                                    <CardContent className="p-6 text-center">
-                                        <Lock className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                                        <h3 className="text-lg font-medium text-slate-900">Sedang Dikunci</h3>
-                                        <p className="text-sm text-slate-500 mt-1">Pengajuan ini sedang diproses oleh petugas lain.</p>
-                                        <div className="mt-4 p-2 bg-white rounded border border-slate-100 text-xs font-semibold text-slate-700">
-                                            {submission.assignee?.full_name || 'Petugas Lain'}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ) : (status !== 'SUBMITTED' && status !== 'PROCESSING' && status !== 'PENDING_VERIFICATION') && (
-                                <Card className="bg-slate-50 border-slate-200">
-                                    <CardContent className="p-6 text-center">
-                                        <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                                        <h3 className="text-lg font-medium text-slate-900">Proses Selesai</h3>
-                                        <p className="text-sm text-slate-500 mt-1">Pengajuan ini telah selesai diproses.</p>
-                                    </CardContent>
-                                </Card>
-                            )
+                        ) : (status !== 'SUBMITTED' && status !== 'PROCESSING' && status !== 'PENDING_VERIFICATION') && (
+                            <Card className="bg-slate-50 border-slate-200">
+                                <CardContent className="p-6 text-center">
+                                    <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                                    <h3 className="text-lg font-medium text-slate-900">Proses Selesai</h3>
+                                    <p className="text-sm text-slate-500 mt-1">Pengajuan ini telah selesai diproses.</p>
+                                </CardContent>
+                            </Card>
                         )
                     )}
 

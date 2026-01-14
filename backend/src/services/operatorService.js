@@ -327,7 +327,7 @@ const sendToVerification = async (submissionId, operatorId, notes = '') => {
         where: { id: submissionId },
         data: {
             status: 'PENDING_VERIFICATION',
-            // Keep current_assignee_id for audit trail
+            current_assignee_id: null // Release lock so Verifier can claim it
         },
         include: {
             creator: true,

@@ -180,7 +180,8 @@ const approveSubmission = async (submissionId, verifierId, notes = '') => {
         const updated = await tx.permohonan.update({
             where: { id: submissionId },
             data: {
-                status: 'APPROVED'
+                status: 'APPROVED',
+                current_assignee_id: null // Release lock
             },
             include: {
                 creator: true,
@@ -236,7 +237,8 @@ const rejectSubmission = async (submissionId, verifierId, reason) => {
     const updated = await prisma.permohonan.update({
         where: { id: submissionId },
         data: {
-            status: 'REJECTED'
+            status: 'REJECTED',
+            current_assignee_id: null // Release lock
         },
         include: {
             creator: true,
