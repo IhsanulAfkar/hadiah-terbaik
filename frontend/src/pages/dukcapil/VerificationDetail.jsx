@@ -303,8 +303,8 @@ const VerificationDetail = () => {
                                 Dokumen Lampiran
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-0">
-                            <ul className="divide-y divide-slate-100">
+                        <CardContent className="p-4">
+                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {dokumen?.map((doc) => {
                                     const token = sessionStorage.getItem('token');
                                     const previewUrl = `${API_BASE_URL}/submissions/document/${doc.file_path}?token=${token}&inline=true`;
@@ -312,52 +312,55 @@ const VerificationDetail = () => {
                                     const isPDF = doc.file_name?.toLowerCase().endsWith('.pdf');
 
                                     return (
-                                        <li key={doc.id} className="p-4 hover:bg-slate-50 transition-colors">
-                                            <div className="flex flex-col gap-4">
-                                                {/* Document Info & Actions Row */}
-                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                                    <div className="flex items-start gap-3">
-                                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                                            <FileText className="w-6 h-6" />
+                                        <li key={doc.id} className="p-3 border border-slate-100 rounded-xl bg-slate-50/30 hover:bg-slate-50 transition-colors">
+                                            <div className="flex flex-col gap-3">
+                                                {/* Document Info & Actions */}
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex gap-2.5 overflow-hidden">
+                                                        <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+                                                            <FileText className="w-5 h-5" />
                                                         </div>
-                                                        <div>
-                                                            <p className="text-sm font-medium text-slate-900">{doc.doc_type.replace(/_/g, ' ')}</p>
-                                                            <p className="text-xs text-slate-500 mt-0.5">{doc.file_name} • {(doc.file_size / 1024).toFixed(1)} KB</p>
+                                                        <div className="overflow-hidden">
+                                                            <p className="text-xs font-bold text-slate-900 truncate uppercase tracking-tight">{doc.doc_type.replace(/_/g, ' ')}</p>
+                                                            <p className="text-[10px] text-slate-500 truncate mt-0.5">{doc.file_name}</p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1 shrink-0">
                                                         <Button
-                                                            variant="outline"
-                                                            size="sm"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7"
                                                             onClick={() => window.open(previewUrl, '_blank')}
+                                                            title="Buka Tab Baru"
                                                         >
-                                                            <Eye className="w-3.5 h-3.5 mr-1.5" />
-                                                            Buka Tab Baru
+                                                            <Eye className="w-3.5 h-3.5" />
                                                         </Button>
                                                         <Button
                                                             variant="ghost"
-                                                            size="sm"
+                                                            size="icon"
+                                                            className="h-7 w-7"
                                                             onClick={() => handleDownload(doc.file_path, doc.file_name)}
+                                                            title="Unduh"
                                                         >
-                                                            <Download className="w-3.5 h-3.5 mr-1.5" />
-                                                            Unduh
+                                                            <Download className="w-3.5 h-3.5" />
                                                         </Button>
                                                     </div>
                                                 </div>
 
-                                                {/* Inline Preview */}
-                                                <div className="rounded-lg border border-slate-200 overflow-hidden bg-slate-50">
+                                                {/* Compact Inline Preview */}
+                                                <div className="rounded-lg border border-slate-200 overflow-hidden bg-white shadow-sm">
                                                     {isImage ? (
                                                         <img
                                                             src={previewUrl}
                                                             alt={doc.file_name}
-                                                            className="w-full h-auto max-h-96 object-contain bg-white"
+                                                            className="w-full h-48 object-cover hover:object-contain transition-all duration-300 cursor-zoom-in"
                                                             loading="lazy"
+                                                            onClick={() => window.open(previewUrl, '_blank')}
                                                         />
                                                     ) : isPDF ? (
                                                         <iframe
                                                             src={previewUrl}
-                                                            className="w-full h-96 border-0"
+                                                            className="w-full h-48 border-0"
                                                             title={doc.file_name}
                                                         />
                                                     ) : (
