@@ -8,7 +8,7 @@ Gunakan perintah ini untuk sehari-hari. Ini akan menggunakan cache jika tidak ad
 
 ```powershell
 # Jalankan semua service (Frontend + Backend + DB)
-docker-compose up -d --build
+![alt text](image.png)
 ```
 
 - `-d`: Detached (jalan di background).

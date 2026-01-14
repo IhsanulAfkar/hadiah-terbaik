@@ -17,8 +17,8 @@ const ALLOWED_MIME_TYPES = [
 // File size limit: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-// Maximum files per upload
-const MAX_FILES = 10;
+// Maximum files per upload (increased to 20 to support complex MOU scenarios)
+const MAX_FILES = 20;
 
 /**
  * Secure file storage configuration

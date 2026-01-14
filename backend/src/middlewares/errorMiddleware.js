@@ -1,6 +1,15 @@
 const logger = require('../utils/logger');
 
 const errorHandler = (err, req, res, _next) => {
+    // Standardize Multer errors
+    if (err.name === 'MulterError') {
+        err.statusCode = 400;
+        err.isOperational = true;
+        if (err.code === 'LIMIT_FILE_SIZE') err.message = 'Ukuran file terlalu besar (Maks 5MB)';
+        if (err.code === 'LIMIT_FILE_COUNT') err.message = 'Terlalu banyak file yang diunggah (Maks 20)';
+        if (err.code === 'LIMIT_UNEXPECTED_FILE') err.message = 'Terdapat field file yang tidak dikenali';
+    }
+
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
 
