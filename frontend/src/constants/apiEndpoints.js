@@ -26,5 +26,6 @@ export const ENDPOINTS = {
     ADMIN_USER_DETAIL: (id) => `/admin/users/${id}`,
     ADMIN_DISTRICTS: '/admin/master/districts',
     ADMIN_DISTRICT_DETAIL: (id) => `/admin/master/districts/${id}`,
-    ADMIN_LOGS: '/admin/logs'
+    ADMIN_LOGS: '/admin/logs',
+    ADMIN_PURGE_SUBMISSIONS: '/admin/system/purge-submissions'
 };

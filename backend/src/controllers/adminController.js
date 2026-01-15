@@ -301,6 +301,29 @@ const getSystemHealth = async (req, res) => {
     }
 };
 
+/**
+ * DANGEROUS: Force delete all submission data
+ * Useful for development cleanup
+ */
+const purgeSubmissions = async (req, res) => {
+    try {
+        // Since we have Cascade Delete in the schema, 
+        // deleting Permohonan will delete DataPernikahan, Dokumen, and StatusLog
+        const { count } = await prisma.permohonan.deleteMany({});
+
+        logger.warn(`ADMIN ${req.user.id} PURGED ALL SUBMISSIONS: ${count} records deleted`);
+
+        res.json({
+            success: true,
+            message: `Berhasil menghapus semua data pengajuan (${count} record)`,
+            count
+        });
+    } catch (error) {
+        logger.error('Purge Submissions Error:', error);
+        res.status(500).json({ success: false, message: 'Gagal menghapus data' });
+    }
+};
+
 module.exports = {
     getUsers,
     createUser,
@@ -313,5 +336,6 @@ module.exports = {
     getLogs,
     resetUserPassword,
     updateUserRole,
-    getSystemHealth
+    getSystemHealth,
+    purgeSubmissions
 };

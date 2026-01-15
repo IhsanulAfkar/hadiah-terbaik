@@ -273,4 +273,18 @@ router.get('/logs', adminController.getLogs);
  */
 router.get('/system/health', adminController.getSystemHealth);
 
+/**
+ * @swagger
+ * /admin/system/purge-submissions:
+ *   delete:
+ *     summary: Force Delete All Submission Data (DANGEROUS)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: All submissions purged
+ */
+router.delete('/system/purge-submissions', adminController.purgeSubmissions);
+
 module.exports = router;
