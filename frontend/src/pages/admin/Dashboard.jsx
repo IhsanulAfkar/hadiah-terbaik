@@ -6,7 +6,7 @@ import { Users, MapPin, Activity, Info, Trash2, ShieldAlert } from 'lucide-react
 import ConfirmDialog from '../../components/ConfirmDialog';
 import api, { ENDPOINTS } from '../../services/api';
 import Button from '../../components/ui/Button';
-import { toast } from 'react-hot-toast';
+import { toast } from 'react-toastify';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
