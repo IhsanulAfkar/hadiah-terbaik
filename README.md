@@ -2,7 +2,7 @@
 
 A full-stack web application integrating KUA (Office of Religious Affairs) and Dukcapil (Population and Civil Registration) workflows for post-marriage data processing.
 
-**🌐 Live Demo:** [https://ht.nasruladitri.space/](https://ht.nasruladitri.space/)
+
 
 
 ## 🚀 Features
@@ -266,12 +266,12 @@ DB_NAME=kua_dukcapil_db
 JWT_SECRET=your_strong_jwt_secret_key_here
 NODE_ENV=production
 PORT=3100
-CORS_ORIGIN=https://ht.nasruladitri.space
+CORS_ORIGIN=
 
 # ================================
 # FRONTEND CONFIGURATION
 # ================================
-VITE_API_BASE_URL=https://api-ht.nasruladitri.space/api/v1
+VITE_API_BASE_URL=
 
 # ================================
 # CLOUDFLARE TUNNEL
@@ -348,9 +348,10 @@ node scripts/migration_status.js
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 Copyright (c) 2026 Nasrul Aditri Rahmandika
-
+Maintained by M Ihsanul Afkar
 ---
 
-**Version**: 2.0.0 (Role-Based API)  
-**Last Updated**: 2025-12-30  
-**Contact**: [@nasruladitri](https://github.com/nasruladitri)
+**Version**: 2.1.0 (Kemenag)  
+**Last Updated**: 2026-02-09  
+**CP1**: [@nasruladitri](https://github.com/nasruladitri)
+**CP2**: [@ihsanulafkar](https://github.com/IhsanulAfkar)
