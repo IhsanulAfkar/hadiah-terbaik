@@ -21,6 +21,7 @@ router.get('/statistics/kecamatan', kemenagController.getKecamatanStats);
 /**
  * Reports
  */
+router.get('/reports', kemenagController.getReport);
 router.get('/reports/performance', kemenagController.getPerformanceReport);
 
 /**

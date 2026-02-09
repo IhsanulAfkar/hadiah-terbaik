@@ -20,7 +20,8 @@ export const ENDPOINTS = {
 
     // Master Data
     DISTRICTS: '/master/districts',
-
+    KEMENAG_REPORT: '/kemenag/reports',
+    KEMENAG_PERFORMANCE: '/kemenag/reports/performance',
     // Admin
     ADMIN_USERS: '/admin/users',
     ADMIN_USER_DETAIL: (id) => `/admin/users/${id}`,

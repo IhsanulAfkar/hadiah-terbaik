@@ -40,6 +40,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
 const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
 const SystemLogs = lazy(() => import('./pages/admin/SystemLogs'));
 const MasterKecamatan = lazy(() => import('./pages/admin/MasterKecamatan'));
+const RekapitulasiKemenag = lazy(() => import('./pages/kemenag/Rekapitulasi'));
 
 // Component to handle root redirect based on role
 const RootRedirect = () => {
@@ -245,6 +246,22 @@ function App() {
                                     element={
                                         <ProtectedRoute roles={['KEMENAG']}>
                                             <LaporanKemenag />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="rekap"
+                                    element={
+                                        <ProtectedRoute roles={['KEMENAG']}>
+                                            <RekapitulasiKemenag />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="rekap/:id"
+                                    element={
+                                        <ProtectedRoute roles={['KEMENAG']}>
+                                            <RekapitulasiKemenag />
                                         </ProtectedRoute>
                                     }
                                 />

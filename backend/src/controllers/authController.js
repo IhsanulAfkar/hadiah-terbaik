@@ -11,12 +11,24 @@ const login = async (req, res) => {
         }
 
         const result = await authService.login(username, password);
+        res.cookie('app_token', result.token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 24 * 60 * 60 * 100,
+        });
 
-        res.json({
+        return res.json({
             success: true,
             message: 'Login successful',
             data: result
         });
+        // res.json({
+        //     success: true,
+        //     message: 'Login successful',
+        //     data: result
+        // });
     } catch (error) {
         logger.error('Login Error:', error);
         // Determine status code based on error message

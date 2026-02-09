@@ -178,7 +178,7 @@ const getKecamatanStatistics = async (kecamatanId = null, period = 'month') => {
  * @param {string} format - Output format (json, summary)
  * @returns {Object} - Performance report
  */
-const getPerformanceReport = async (period = 'month', format = 'json') => {
+const getPerformanceReport = async (period = 'month', format = 'json', listKecamatan = []) => {
     // Calculate date range
     const now = new Date();
     let startDate;
@@ -196,14 +196,24 @@ const getPerformanceReport = async (period = 'month', format = 'json') => {
         default:
             startDate = new Date(0); // All time
     }
-
+    const whereClause = {
+        created_at: { gte: startDate },
+        ...(listKecamatan.length > 0 && {
+            creator: {
+                kecamatan: {
+                    kode: {
+                        in: listKecamatan
+                    }
+                }
+            }
+        })
+    }
+    console.log('where', whereClause)
     // Get overall statistics
     const [totalSubmissions, byStatus, avgProcessingTime] = await Promise.all([
         // Total submissions
         prisma.permohonan.count({
-            where: {
-                created_at: { gte: startDate }
-            }
+            where: whereClause
         }),
 
         // Count by status
@@ -212,9 +222,7 @@ const getPerformanceReport = async (period = 'month', format = 'json') => {
             _count: {
                 id: true
             },
-            where: {
-                created_at: { gte: startDate }
-            }
+            where: whereClause
         }),
 
         // Average processing time (from SUBMITTED to APPROVED/REJECTED)
@@ -223,7 +231,16 @@ const getPerformanceReport = async (period = 'month', format = 'json') => {
                 status: {
                     in: ['APPROVED', 'REJECTED']
                 },
-                created_at: { gte: startDate }
+                created_at: { gte: startDate },
+                ...(listKecamatan.length > 0 && {
+                    creator: {
+                        kecamatan: {
+                            kode: {
+                                in: listKecamatan
+                            }
+                        }
+                    }
+                })
             },
             select: {
                 created_at: true,

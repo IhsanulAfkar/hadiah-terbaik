@@ -77,7 +77,12 @@ const getMySubmissions = async (userId) => {
         include: {
             data_pernikahan: true,
             dokumen: true,
-            logs: true
+            logs: true,
+            creator: {
+                include: {
+                    kecamatan: true
+                }
+            }
         },
         orderBy: { created_at: 'desc' }
     });

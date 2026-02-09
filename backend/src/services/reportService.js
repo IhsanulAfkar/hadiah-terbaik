@@ -43,7 +43,7 @@ const getReportData = async (role, userId, period) => {
                     kecamatan: { select: { nama: true } }
                 }
             },
-            current_assignee: { select: { full_name: true } }
+            assignee: { select: { full_name: true } }
         },
         orderBy: { created_at: 'desc' }
     });

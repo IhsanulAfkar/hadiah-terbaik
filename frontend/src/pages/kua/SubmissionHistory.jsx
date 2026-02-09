@@ -95,6 +95,7 @@ const SubmissionHistory = () => {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>No. Tiket</TableHead>
+                                <TableHead>KUA</TableHead>
                                 <TableHead>Nama Pasangan</TableHead>
                                 <TableHead>Tanggal Pengajuan</TableHead>
                                 <TableHead>Tanggal Disetujui</TableHead>
@@ -130,8 +131,13 @@ const SubmissionHistory = () => {
 
                                     return (
                                         <TableRow key={sub.id}>
-                                            <TableCell className="font-medium text-primary-600">
-                                                #{sub.ticket_number}
+                                            <TableCell className="font-medium text-primary-600" >
+                                                <a href={`/kua/submission/${sub.id}`}>
+                                                    #{sub.ticket_number}
+                                                </a>
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {sub.creator.kecamatan.nama}
                                             </TableCell>
                                             <TableCell>
                                                 <div className="font-medium text-slate-900">

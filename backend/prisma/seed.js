@@ -85,7 +85,7 @@ async function main() {
             full_name: 'Super Administrator',
             nip: '199001012020011001',
             role: 'ADMIN',
-            must_change_password: true, // Force password change on first login
+            must_change_password: false, // Force password change on first login
         },
     });
     console.log(`✅ Created user: ${admin.username}`);
@@ -110,7 +110,7 @@ async function main() {
             nip: '198505052010011005',
             role: 'KUA',
             kecamatan_id: mejayanKecamatan?.id,
-            must_change_password: true,
+            must_change_password: false,
         },
     });
     console.log(`✅ Created user: ${kuaUser.username}`);
@@ -134,7 +134,7 @@ async function main() {
             full_name: 'Operator Dukcapil',
             nip: '199202022015022002',
             role: 'OPERATOR_DUKCAPIL',
-            must_change_password: true,
+            must_change_password: false,
         },
     });
     console.log(`✅ Created user: ${dukcapilUser.username}`);
@@ -158,7 +158,7 @@ async function main() {
             full_name: 'Verifikator Dukcapil',
             nip: '199303032015032003',
             role: 'VERIFIKATOR_DUKCAPIL',
-            must_change_password: true,
+            must_change_password: false,
         },
     });
     console.log(`✅ Created user: ${verifier.username}`);
@@ -182,7 +182,7 @@ async function main() {
             full_name: 'Petugas Kemenag',
             nip: '199404042015042004',
             role: 'KEMENAG',
-            must_change_password: true,
+            must_change_password: false,
         },
     });
     console.log(`✅ Created user: ${kemenag.username}`);

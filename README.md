@@ -55,6 +55,9 @@ npx prisma migrate deploy
 
 # Seed database (create default users)
 npx prisma db seed
+
+# in docker terminal
+npx prisma migrate dev --name init
 ```
 
 ### 4. Initial Admin Setup

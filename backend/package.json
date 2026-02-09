@@ -7,7 +7,8 @@
     "dev": "nodemon src/app.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migrate": "prisma migrate dev"
   },
   "keywords": [],
   "author": "Nasrul Aditri Rahmandika",
