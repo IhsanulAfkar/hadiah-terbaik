@@ -118,7 +118,8 @@ const getReportDetail = async (req, res) => {
 						kecamatan: true
 					}
 				},
-				data_pernikahan: true
+				data_pernikahan: true,
+				logs: true
 			}
 		})
 		res.json({ success: true, data: permohonan });
@@ -161,6 +162,71 @@ const getAllSubmissions = async (req, res) => {
 		});
 	}
 };
+const getDailyStats = async (req, res) => {
+	try {
+		const startOfToday = new Date()
+		startOfToday.setHours(0, 0, 0, 0)
+
+		const startOfTomorrow = new Date(startOfToday)
+		startOfTomorrow.setDate(startOfTomorrow.getDate() + 1)
+		const totalToday = await prisma.permohonan.count({
+			where: {
+				created_at: {
+					gte: startOfToday,
+					lt: startOfTomorrow
+				}
+			}
+		})
+		const statusCounts = await prisma.permohonan.groupBy({
+			by: ['status'],
+			where: {
+				created_at: {
+					gte: startOfToday,
+					lt: startOfTomorrow
+				},
+				status: {
+					in: ['APPROVED', 'PENDING_VERIFICATION', 'SUBMITTED']
+				}
+			},
+			_count: {
+				_all: true
+			}
+		})
+		const pending =
+			statusCounts.find(s => ['PENDING_VERIFICATION', 'SUBMITTED'].includes(s.status))?._count._all ?? 0
+		const approved =
+			statusCounts.find(s => s.status === 'APPROVED')?._count._all ?? 0
+
+		const distinctUsers = await prisma.permohonan.findMany({
+			where: {
+				created_at: {
+					gte: startOfToday,
+					lt: startOfTomorrow
+				}
+			},
+			select: {
+				user_id: true
+			},
+			distinct: ['user_id']
+		})
+
+		const totalUsersToday = distinctUsers.length
+
+		res.json({
+			success: true, data: {
+				approved,
+				pending,
+				total: totalToday,
+				total_user: totalUsersToday
+			}
+		});
+	} catch (error) {
+		res.status(error.statusCode || 500).json({
+			success: false,
+			message: error.message
+		});
+	}
+};
 
 module.exports = {
 	getKUAStats,
@@ -168,5 +234,6 @@ module.exports = {
 	getPerformanceReport,
 	getAllSubmissions,
 	getReport,
-	getReportDetail
+	getReportDetail,
+	getDailyStats
 };

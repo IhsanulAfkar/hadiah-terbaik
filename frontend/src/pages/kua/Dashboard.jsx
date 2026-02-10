@@ -160,6 +160,7 @@ const KuaDashboard = () => {
                                 <thead className="bg-primary-600 text-white">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-sm font-semibold uppercase">No. Tiket</th>
+                                        <th className="px-4 py-3 text-left text-sm font-semibold uppercase">KUA</th>
                                         <th className="px-4 py-3 text-left text-sm font-semibold uppercase">Pasangan</th>
                                         <th className="px-4 py-3 text-left text-sm font-semibold uppercase">Status</th>
                                         <th className="px-4 py-3 text-right text-sm font-semibold uppercase">Aksi</th>
@@ -172,6 +173,10 @@ const KuaDashboard = () => {
                                                 <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2 py-1 rounded-md group-hover:bg-primary-100 transition-colors">
                                                     #{sub.ticket_number}
                                                 </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+
+                                                {sub.creator?.kecamatan?.nama}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm font-medium text-slate-900">

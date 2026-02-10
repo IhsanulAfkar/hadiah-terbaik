@@ -373,8 +373,8 @@ const getPerformanceReport = async (period = 'month', format = 'json', listKecam
         by_status: statusCounts,
         performance_indicators: {
             approved: statusCounts.APPROVED || 0,
-            rejected: statusCounts.REJECTED || 0,
-            pending: (statusCounts.SUBMITTED || 0) + (statusCounts.NEEDS_REVISION || 0),
+            rejected: (statusCounts.REJECTED || 0) + (statusCounts.NEEDS_REVISION),
+            pending: (statusCounts.SUBMITTED || 0),
             in_process: (statusCounts.PROCESSING || 0) + (statusCounts.PENDING_VERIFICATION || 0)
         }
     };

@@ -1,5 +1,5 @@
 
-export const getPeriodDate = (period) => {
+const getPeriodDate = (period) => {
   const now = new Date()
   let startDate
   switch (period) {
@@ -16,4 +16,8 @@ export const getPeriodDate = (period) => {
       startDate = new Date(0);
   }
   return startDate
+}
+
+module.exports = {
+  getPeriodDate
 }

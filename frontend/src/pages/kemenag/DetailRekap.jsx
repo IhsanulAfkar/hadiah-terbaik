@@ -217,15 +217,7 @@ const DetailRekap = () => {
 											{rejectionNote}
 										</TableCell>
 										<TableCell className="text-right space-x-2">
-											{['DRAFT', 'REJECTED', 'NEEDS_REVISION'].includes(sub.status) && (
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() => navigate(`/kua/submission/edit/${sub.id}`)}
-												>
-													{sub.status === 'DRAFT' ? 'Edit' : 'Perbaiki'}
-												</Button>
-											)}
+
 											<Button
 												variant="ghost"
 												size="sm"

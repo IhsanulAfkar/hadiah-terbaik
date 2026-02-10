@@ -63,7 +63,7 @@ const Sidebar = ({ onCloseMobile }) => {
             case 'KEMENAG':
                 return [
                     { name: 'Dashboard', icon: LayoutDashboard, path: '/kemenag/dashboard' },
-                    { name: 'Laporan', icon: BarChart3, path: '/kemenag/laporan' },
+                    // { name: 'Laporan', icon: BarChart3, path: '/kemenag/laporan' },
                     { name: 'Rekapitulasi', icon: History, path: '/kemenag/rekap' },
                 ];
             default:

@@ -2,8 +2,12 @@ import React from 'react';
 import StatCard from '../../components/ui/StatCard';
 import { Card, CardContent } from '../../components/ui/Card';
 import { LayoutDashboard, Users, FileText, Activity } from 'lucide-react';
+import { useKemenagDaily } from '@/hooks/useKemenagDaily';
+import Loading from '@/components/common/Loading';
 
 const KemenagDashboard = () => {
+    const { data, isLoading } = useKemenagDaily()
+    if (isLoading) return <Loading />
     return (
         <div className="space-y-6">
             <div>
@@ -14,26 +18,26 @@ const KemenagDashboard = () => {
             {/* Quick Stats Placeholder */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
-                    title="Total Pengjuan"
-                    value="-"
+                    title="Total Pengajuan"
+                    value={data?.total}
                     icon={FileText}
                     gradient="bg-gradient-to-br from-blue-600 to-blue-800"
                 />
                 <StatCard
                     title="Verifikasi Selesai"
-                    value="-"
+                    value={data?.approved}
                     icon={Users}
                     gradient="bg-gradient-to-br from-emerald-600 to-emerald-800"
                 />
                 <StatCard
                     title="Pending"
-                    value="-"
+                    value={data?.pending}
                     icon={Activity}
                     gradient="bg-gradient-to-br from-amber-500 to-amber-700"
                 />
                 <StatCard
                     title="Unit KUA"
-                    value="-"
+                    value={data?.total_user}
                     icon={LayoutDashboard}
                     gradient="bg-gradient-to-br from-purple-600 to-purple-800"
                 />

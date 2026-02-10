@@ -192,11 +192,11 @@ const RekapitulasiKemenag = () => {
 					<TableHeader>
 						<TableRow>
 							<TableHead>KUA</TableHead>
-							<TableHead>Pending</TableHead>
+							<TableHead>Total</TableHead>
+							<TableHead>Menunggu</TableHead>
 							<TableHead>Diproses</TableHead>
 							<TableHead>Disetujui</TableHead>
-							<TableHead>Ditolak</TableHead>
-							<TableHead>Total</TableHead>
+							<TableHead>Ditolak/Revisi</TableHead>
 							<TableHead className="text-right">Aksi</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -230,20 +230,21 @@ const RekapitulasiKemenag = () => {
 											{sub.kecamatan_name}
 										</TableCell>
 										<TableCell className="font-medium">
-											{sub.pending_verification}
+											{sub.total}
 										</TableCell>
 										<TableCell className="font-medium">
-											{sub.processing}
+											{sub.submitted}
+										</TableCell>
+										<TableCell className="font-medium">
+											{sub.processing + sub.pending_verification}
 										</TableCell>
 										<TableCell className="font-medium">
 											{sub.approved}
 										</TableCell>
 										<TableCell className="font-medium">
-											{sub.rejected}
+											{sub.rejected + sub.needs_revision}
 										</TableCell>
-										<TableCell className="font-medium">
-											{sub.total}
-										</TableCell>
+
 
 										<TableCell className="text-right">
 											<Button
