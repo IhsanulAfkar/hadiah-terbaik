@@ -58,7 +58,7 @@ const RekapitulasiKemenag = () => {
 	const exportReport = async (format) => {
 		try {
 			toast.info(`Memproses download ${format}...`);
-			const response = await api.get(`${ENDPOINTS.REPORT_EXPORT}?format=${format.toLowerCase()}&period=${period}`, {
+			const response = await api.get(`${ENDPOINTS.REPORT_EXPORT}/kemenag/summary?format=${format.toLowerCase()}&period=${period}&kode_kecamatan=${selectKecamatan.join(',')}`, {
 				responseType: 'blob'
 			});
 
@@ -152,6 +152,41 @@ const RekapitulasiKemenag = () => {
 					icon={XCircle}
 				/>
 			</div>
+
+			{/* Export Section */}
+			<Card className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border-blue-100">
+				<CardContent className="p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+					<div className="flex items-start gap-4">
+						<div className="p-3 bg-white rounded-xl shadow-sm text-blue-600 ring-1 ring-blue-100">
+							<FileText className="w-6 h-6" />
+						</div>
+						<div>
+							<h3 className="text-lg font-bold text-slate-900">Export Laporan</h3>
+							<p className="text-sm text-slate-600 mt-1 max-w-lg">
+								Unduh laporan lengkap dalam format PDF atau Excel.
+							</p>
+						</div>
+					</div>
+					<div className="flex gap-3 w-full md:w-auto">
+						<Button
+							variant="outline"
+							className="w-full md:w-auto bg-white hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-colors"
+							onClick={() => exportReport('PDF')}
+						>
+							<Download className="w-4 h-4 mr-2" />
+							Unduh PDF
+						</Button>
+						<Button
+							variant="outline"
+							className="w-full md:w-auto bg-white hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors"
+							onClick={() => exportReport('Excel')}
+						>
+							<Download className="w-4 h-4 mr-2" />
+							Unduh Excel
+						</Button>
+					</div>
+				</CardContent>
+			</Card>
 			<div className="rounded-md border border-slate-200">
 				<Table>
 					<TableHeader>
@@ -226,40 +261,6 @@ const RekapitulasiKemenag = () => {
 					</TableBody>
 				</Table>
 			</div>
-			{/* Export Section */}
-			<Card className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border-blue-100">
-				<CardContent className="p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-					<div className="flex items-start gap-4">
-						<div className="p-3 bg-white rounded-xl shadow-sm text-blue-600 ring-1 ring-blue-100">
-							<FileText className="w-6 h-6" />
-						</div>
-						<div>
-							<h3 className="text-lg font-bold text-slate-900">Export Laporan</h3>
-							<p className="text-sm text-slate-600 mt-1 max-w-lg">
-								Unduh laporan lengkap dalam format PDF atau Excel.
-							</p>
-						</div>
-					</div>
-					<div className="flex gap-3 w-full md:w-auto">
-						<Button
-							variant="outline"
-							className="w-full md:w-auto bg-white hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-colors"
-							onClick={() => exportReport('PDF')}
-						>
-							<Download className="w-4 h-4 mr-2" />
-							Unduh PDF
-						</Button>
-						<Button
-							variant="outline"
-							className="w-full md:w-auto bg-white hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors"
-							onClick={() => exportReport('Excel')}
-						>
-							<Download className="w-4 h-4 mr-2" />
-							Unduh Excel
-						</Button>
-					</div>
-				</CardContent>
-			</Card>
 		</div>
 	);
 };

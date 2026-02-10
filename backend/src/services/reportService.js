@@ -104,6 +104,65 @@ const generatePdf = async (data, res, period = 'all') => {
 
     doc.end();
 };
+const generatePdfSummaryKemenag = async (data, res, period = 'all') => {
+    const doc = new PDFDocument({ margin: 30, size: 'A4' });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=Laporan_Pengajuan_${Date.now()}.pdf`);
+
+    doc.pipe(res);
+
+    // Header
+    doc.fontSize(20).text('Laporan Verifikasi Pernikahan', { align: 'center' });
+
+    // Period info
+    const periodLabels = {
+        week: '7 Hari Terakhir',
+        month: '30 Hari Terakhir',
+        year: '1 Tahun Terakhir',
+        all: 'Semua Data'
+    };
+    doc.fontSize(10).text(`Periode: ${periodLabels[period] || 'Semua Data'}`, { align: 'center' });
+    doc.fontSize(12).text(`Total Kecamatan: ${data.length}`, { align: 'center' });
+    doc.moveDown();
+
+    // Table Header
+    const tableTop = 150;
+    const itemHeight = 30;
+
+    let y = tableTop;
+
+    doc.fontSize(10);
+    doc.text('KUA', 50, y);
+    doc.text('Pending', 250, y);
+    doc.text('Diproses', 300, y);
+    doc.text('Disetujui', 350, y);
+    doc.text('Ditolak', 400, y);
+    doc.text('Total', 450, y);
+
+    y += 20;
+    doc.moveTo(50, y).lineTo(550, y).stroke();
+    y += 10;
+
+    // Table Rows
+    data.forEach(item => {
+        if (y > 700) {
+            doc.addPage();
+            y = 50;
+        }
+
+        doc.text(item.kecamatan_name, 50, y);
+        doc.text(item.pending_verification, 250, y);
+        doc.text(item.processing, 300, y);
+        doc.text(item.approved, 350, y);
+        doc.text(item.rejected, 400, y);
+        doc.text(item.total, 450, y);
+
+        y += itemHeight;
+    });
+
+    doc.end();
+};
 
 const generateExcel = async (data, res, period = 'all') => {
     const workbook = new ExcelJS.Workbook();
@@ -155,9 +214,61 @@ const generateExcel = async (data, res, period = 'all') => {
     await workbook.xlsx.write(res);
     res.end();
 };
+const generateExcelSummaryKemenag = async (data, res, period = 'all') => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Laporan');
+
+    // Add title and period
+    const periodLabels = {
+        week: '7 Hari Terakhir',
+        month: '30 Hari Terakhir',
+        year: '1 Tahun Terakhir',
+        all: 'Semua Data'
+    };
+
+    worksheet.mergeCells('A1:F1');
+    worksheet.getCell('A1').value = 'Laporan Verifikasi Pernikahan';
+    worksheet.getCell('A1').font = { size: 16, bold: true };
+    worksheet.getCell('A1').alignment = { horizontal: 'center' };
+
+    worksheet.mergeCells('A2:F2');
+    worksheet.getCell('A2').value = `Periode: ${periodLabels[period] || 'Semua Data'} | Total: ${data.length} kecamatan`;
+    worksheet.getCell('A2').alignment = { horizontal: 'center' };
+
+    // Add empty row
+    worksheet.addRow([]);
+
+    worksheet.columns = [
+        { header: 'KUA', key: 'kua', width: 25 },
+        { header: 'Pending', key: 'pending', width: 20 },
+        { header: 'Diproses', key: 'processing', width: 20 },
+        { header: 'Disetujui', key: 'approved', width: 20 },
+        { header: 'Ditolak', key: 'rejected', width: 20 },
+        { header: 'Total', key: 'total', width: 20 },
+    ];
+
+    data.forEach(item => {
+        worksheet.addRow({
+            kua: item.kecamatan_name,
+            pending: item.pending_verification,
+            processing: item.processing,
+            approved: item.approved,
+            rejected: item.rejected,
+            total: item.total,
+        });
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=Laporan_${Date.now()}.xlsx`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+};
 
 module.exports = {
     getReportData,
     generatePdf,
-    generateExcel
+    generateExcel,
+    generatePdfSummaryKemenag,
+    generateExcelSummaryKemenag
 };

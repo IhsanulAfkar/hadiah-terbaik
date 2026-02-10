@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Loading from './components/common/Loading';
@@ -34,13 +34,15 @@ const OperatorHistory = lazy(() => import('./pages/dukcapil/operator/History'));
 // Kemenag Pages
 const KemenagDashboard = lazy(() => import('./pages/kemenag/Dashboard'));
 const LaporanKemenag = lazy(() => import('./pages/kemenag/Laporan'));
+const RekapitulasiKemenag = lazy(() => import('./pages/kemenag/Rekapitulasi'));
+const DetailRekap = lazy(() => import('./pages/kemenag/DetailRekap'));
+const KemenagSubmissionDetail = lazy(() => import('./pages/kemenag/SubmissionDetail'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
 const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
 const SystemLogs = lazy(() => import('./pages/admin/SystemLogs'));
 const MasterKecamatan = lazy(() => import('./pages/admin/MasterKecamatan'));
-const RekapitulasiKemenag = lazy(() => import('./pages/kemenag/Rekapitulasi'));
 
 // Component to handle root redirect based on role
 const RootRedirect = () => {
@@ -232,39 +234,22 @@ function App() {
                             </Route>
 
                             {/* Kemenag Routes */}
-                            <Route path="/kemenag">
-                                <Route
-                                    path="dashboard"
-                                    element={
-                                        <ProtectedRoute roles={['KEMENAG']}>
-                                            <KemenagDashboard />
-                                        </ProtectedRoute>
-                                    }
-                                />
-                                <Route
-                                    path="laporan"
-                                    element={
-                                        <ProtectedRoute roles={['KEMENAG']}>
-                                            <LaporanKemenag />
-                                        </ProtectedRoute>
-                                    }
-                                />
-                                <Route
-                                    path="rekap"
-                                    element={
-                                        <ProtectedRoute roles={['KEMENAG']}>
-                                            <RekapitulasiKemenag />
-                                        </ProtectedRoute>
-                                    }
-                                />
-                                <Route
-                                    path="rekap/:id"
-                                    element={
-                                        <ProtectedRoute roles={['KEMENAG']}>
-                                            <RekapitulasiKemenag />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                            <Route
+                                path="/kemenag"
+                                element={
+                                    <ProtectedRoute roles={['KEMENAG']}>
+                                        <Outlet />
+                                    </ProtectedRoute>
+                                }
+                            >
+                                <Route path="dashboard" element={<KemenagDashboard />} />
+                                <Route path="laporan" element={<LaporanKemenag />} />
+
+                                <Route path="rekap">
+                                    <Route index element={<RekapitulasiKemenag />} />
+                                    <Route path=":id" element={<DetailRekap />} />
+                                    <Route path=":id/:submissionId" element={<KemenagSubmissionDetail />} />
+                                </Route>
                             </Route>
 
                             {/* Admin Routes */}

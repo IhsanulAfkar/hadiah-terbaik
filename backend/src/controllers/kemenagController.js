@@ -72,92 +72,56 @@ const getPerformanceReport = async (req, res) => {
 const getReport = async (req, res) => {
 	try {
 		const period = req.query.period
-		const kecamatanKode = (req.query.kode_kecamatan ?? '')
-			.toString()
-			.split(',')
-			.map(id => id.trim())
-			.filter(Boolean)
+		const kode_kecamatan = req.query.kode_kecamatan
+		const output = await kemenagService.getSubmissionSummary({
+			period,
+			kode_kecamatan
+		})
+		res.json({ success: true, data: output });
+	} catch (error) {
+		console.error(error)
+		res.status(error.statusCode || 500).json({
+			success: false,
+			message: error.message
+		});
+	}
+}
+const getReportDetail = async (req, res) => {
+	try {
+		const period = req.query.period
+		const kecamatanUuid = req.params.id
 		const periodDate = getPeriodDate(period)
-		const kecamatans = await prisma.kecamatan.findMany({
-			where: kecamatanKode.length
-				? {
-					kode: {
-						in: kecamatanKode
-					}
-				}
-				: undefined,
-			select: {
-				id: true,
-				nama: true
-			},
-			orderBy: {
-				nama: 'asc'
-			}
-		})
-
-		const result = await prisma.permohonan.groupBy({
-			by: ['user_id', 'status'],
-			_count: {
-				_all: true
-			},
+		// check kecamatan
+		const kecamatan = await prisma.kecamatan.findFirst({
 			where: {
-				created_at: {
-					gte: periodDate
-				},
-			},
-
-		})
-		const creatorIds = [...new Set(result.map(g => g.user_id))]
-
-		const users = await prisma.user.findMany({
-			where: {
-				id: { in: creatorIds }
-			},
-			select: {
-				id: true,
-				kecamatan: {
-					select: {
-						id: true,
-						nama: true
-					}
-				}
+				id: kecamatanUuid
 			}
 		})
-		const userKecamatanMap = Object.fromEntries(
-			users
-				.filter(u => u.kecamatan)
-				.map(u => [u.id, u.kecamatan])
-		)
-		const statuses = Object.values(Status)
-
-		const resultMap = {}
-
-		for (const kec of kecamatans) {
-			resultMap[kec.id] = {
-				kecamatan_id: kec.id,
-				kecamatan_name: kec.nama,
-				total: 0
-			}
-
-			statuses.forEach(status => {
-				resultMap[kec.id][status.toLowerCase()] = 0
+		if (!kecamatan) {
+			return res.status(404).json({
+				success: false,
+				message: 'Kecamatan tidak ditemukan'
 			})
 		}
-
-		for (const row of result) {
-			const kecamatan = userKecamatanMap[row.user_id]
-			if (!kecamatan) continue
-
-			const data = resultMap[kecamatan.id]
-			// console.log('tes', row.status, data)
-			if (data) {
-				data[row?.status?.toLowerCase()] += row._count._all
-				data.total += row._count._all
+		const permohonan = await prisma.permohonan.findMany({
+			where: {
+				creator: {
+					kecamatan_id: kecamatan.id
+				},
+				created_at: {
+					gte: periodDate
+				}
+			},
+			include: {
+				creator: {
+					include: {
+						kecamatan: true
+					}
+				},
+				data_pernikahan: true
 			}
-		}
-		const output = Object.values(resultMap)
-
-		res.json({ success: true, data: output });
+		})
+		res.json({ success: true, data: permohonan });
 	} catch (error) {
 		console.error(error)
 		res.status(error.statusCode || 500).json({
@@ -203,5 +167,6 @@ module.exports = {
 	getKecamatanStats,
 	getPerformanceReport,
 	getAllSubmissions,
-	getReport
+	getReport,
+	getReportDetail
 };

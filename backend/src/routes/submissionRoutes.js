@@ -72,7 +72,7 @@ router.post('/',
  */
 router.put('/:id',
     verifyToken,
-    authorizeRole(['KUA']),
+    authorizeRole(['KUA', 'KEMENAG']),
     upload.any(),
     submissionController.update
 );

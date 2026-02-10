@@ -2,20 +2,18 @@
 import { useEffect, useState } from 'react';
 import api, { ENDPOINTS } from '../services/api';
 
-export const useKemenagRekapDetail = (period = 'week') => {
-  const [data, setData] = useState(null)
+export const useKemenagRekapDetail = (period = 'week', id) => {
+  const [data, setData] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const [kecamatan, setKecamatan] = useState([])
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true)
 
         // 1. Fetch Stats from optimized endpoint
-        const resStats = await api.get(ENDPOINTS.KEMENAG_REPORT, {
+        const resStats = await api.get(ENDPOINTS.KEMENAG_REPORT + `/${id}`, {
           params: {
-            period,
-            kode_kecamatan: kecamatan.join(',')
+            period
           }
         });
 
@@ -30,11 +28,9 @@ export const useKemenagRekapDetail = (period = 'week') => {
 
     fetchData();
   }, [period]);
+
   return {
     data,
     isLoading,
-    filter: {
-      kecamatan, setKecamatan
-    }
   }
 }

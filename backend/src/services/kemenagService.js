@@ -1,5 +1,7 @@
+const { Status } = require('@prisma/client');
 const prisma = require('../config/database');
 const AppError = require('../utils/AppError');
+const { getPeriodDate } = require('../utils/helper');
 
 /**
  * Kemenag Service - Handles monitoring and statistics for Kemenag role
@@ -170,7 +172,96 @@ const getKecamatanStatistics = async (kecamatanId = null, period = 'month') => {
         by_kecamatan: byKecamatan
     };
 };
+const getSubmissionSummary = async ({
+    period,
+    kode_kecamatan
+}) => {
+    const kecamatanKode = (kode_kecamatan ?? '')
+        .toString()
+        .split(',')
+        .map(id => id.trim())
+        .filter(Boolean)
+    const periodDate = getPeriodDate(period)
+    const kecamatans = await prisma.kecamatan.findMany({
+        where: kecamatanKode.length
+            ? {
+                kode: {
+                    in: kecamatanKode
+                }
+            }
+            : undefined,
+        select: {
+            id: true,
+            nama: true
+        },
+        orderBy: {
+            nama: 'asc'
+        }
+    })
 
+    const result = await prisma.permohonan.groupBy({
+        by: ['user_id', 'status'],
+        _count: {
+            _all: true
+        },
+        where: {
+            created_at: {
+                gte: periodDate
+            },
+        },
+
+    })
+    const creatorIds = [...new Set(result.map(g => g.user_id))]
+
+    const users = await prisma.user.findMany({
+        where: {
+            id: { in: creatorIds }
+        },
+        select: {
+            id: true,
+            kecamatan: {
+                select: {
+                    id: true,
+                    nama: true
+                }
+            }
+        }
+    })
+    const userKecamatanMap = Object.fromEntries(
+        users
+            .filter(u => u.kecamatan)
+            .map(u => [u.id, u.kecamatan])
+    )
+    const statuses = Object.values(Status)
+
+    const resultMap = {}
+
+    for (const kec of kecamatans) {
+        resultMap[kec.id] = {
+            kecamatan_id: kec.id,
+            kecamatan_name: kec.nama,
+            total: 0
+        }
+
+        statuses.forEach(status => {
+            resultMap[kec.id][status.toLowerCase()] = 0
+        })
+    }
+
+    for (const row of result) {
+        const kecamatan = userKecamatanMap[row.user_id]
+        if (!kecamatan) continue
+
+        const data = resultMap[kecamatan.id]
+        // console.log('tes', row.status, data)
+        if (data) {
+            data[row?.status?.toLowerCase()] += row._count._all
+            data.total += row._count._all
+        }
+    }
+    return Object.values(resultMap)
+
+}
 /**
  * Get overall performance report
  * 
@@ -208,7 +299,6 @@ const getPerformanceReport = async (period = 'month', format = 'json', listKecam
             }
         })
     }
-    console.log('where', whereClause)
     // Get overall statistics
     const [totalSubmissions, byStatus, avgProcessingTime] = await Promise.all([
         // Total submissions
@@ -374,5 +464,6 @@ module.exports = {
     getKUAStatistics,
     getKecamatanStatistics,
     getPerformanceReport,
-    getAllSubmissions
+    getAllSubmissions,
+    getSubmissionSummary
 };

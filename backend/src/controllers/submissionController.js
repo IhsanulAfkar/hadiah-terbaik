@@ -77,7 +77,7 @@ const detail = async (req, res) => {
         }
 
         // Security Check: Only Creator, Dukcapil, or Admin can view
-        if (req.user.role !== 'DUKCAPIL' && req.user.role !== 'ADMIN' && submission.user_id !== req.user.id) {
+        if (req.user.role !== 'DUKCAPIL' && req.user.role !== 'ADMIN' && req.user.role !== 'KEMENAG' && submission.user_id !== req.user.id) {
             return res.status(403).json({ success: false, message: 'Access denied' });
         }
 

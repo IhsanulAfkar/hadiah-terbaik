@@ -17,10 +17,18 @@ import Loading from '../../components/common/Loading';
 import { useKemenagRekap } from '../../hooks/useKemenagRekap';
 import { useKemenagStatistik } from '../../hooks/useKemenagStatistik';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useKemenagRekapDetail } from '@/hooks/useKemenagRekapDetail';
+import { useKecamatan } from '@/hooks/useKecamatan';
+import EmptyState from '@/components/ui/EmptyState';
+import Badge from '@/components/ui/Badge';
+import { getStatusBadgeVariant, getStatusLabel } from '@/services/helper';
 
 const DetailRekap = () => {
 	// Reusing the logic from LaporanKUA for now, assuming similar structure
+	const { id: kecamatanUuid } = useParams();
+	const { data: kecamatans } = useKecamatan()
+	const [currentKecamatan, setCurrentKecamatan] = useState()
 	const [stats, setStats] = useState({
 		total: 0,
 		submitted: 0,
@@ -30,20 +38,17 @@ const DetailRekap = () => {
 	});
 	const navigate = useNavigate()
 	const [period, setPeriod] = useState('month');
-	const { data, isLoading } = useKemenagRekap(period)
-	const { data: dataStatistik } = useKemenagStatistik(period)
+	const { data, isLoading } = useKemenagRekapDetail(period, kecamatanUuid)
 	useEffect(() => {
-		if (dataStatistik) {
-			const statistik = dataStatistik.performance_indicators
-			setStats({
-				approved: statistik.approved,
-				rejected: statistik.rejected,
-				submitted: statistik.pending,
-				processing: statistik.in_process,
-				total: (statistik.approved + statistik.rejected + statistik.pending + statistik.in_process)
-			})
+		if (kecamatans && kecamatans.length > 0) {
+			const kec = kecamatans.find(k => k.id === kecamatanUuid)
+			if (!kec) {
+				toast.error('Kecamatan tidak ditemukan')
+				return
+			}
+			setCurrentKecamatan(kec)
 		}
-	}, [dataStatistik])
+	}, [kecamatanUuid, kecamatans])
 	const periods = [
 		{ id: 'week', label: '7 Hari Terakhir' },
 		{ id: 'month', label: '30 Hari Terakhir' },
@@ -54,7 +59,7 @@ const DetailRekap = () => {
 	const exportReport = async (format) => {
 		try {
 			toast.info(`Memproses download ${format}...`);
-			const response = await api.get(`${ENDPOINTS.REPORT_EXPORT}?format=${format.toLowerCase()}&period=${period}`, {
+			const response = await api.get(`${ENDPOINTS.REPORT_EXPORT}/kemenag?format=${format.toLowerCase()}&period=${period}&kecamatan=${currentKecamatan.id}`, {
 				responseType: 'blob'
 			});
 
@@ -74,13 +79,13 @@ const DetailRekap = () => {
 	};
 
 	if (isLoading) return <Loading />;
-
+	if (!currentKecamatan) return <></>
 	return (
 		<div className="space-y-8">
 			{/* Header Section */}
 			<div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-display font-bold text-slate-900">Laporan Statistik (Kemenag)</h1>
+					<h1 className="text-2xl font-display font-bold text-slate-900">Detail Laporan Statistik KUA {currentKecamatan.nama}</h1>
 					<p className="mt-1 text-sm text-slate-500">
 						Monitoring data pengajuan nikah lintas wilayah.
 					</p>
@@ -107,7 +112,7 @@ const DetailRekap = () => {
 			</div>
 
 			{/* Statistics Grid */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+			{/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 				<StatCard
 					title="Total Pengajuan"
 					value={stats.total}
@@ -138,17 +143,17 @@ const DetailRekap = () => {
 					gradient="bg-gradient-to-br from-rose-500 to-rose-700"
 					icon={XCircle}
 				/>
-			</div>
+			</div> */}
 			<div className="rounded-md border border-slate-200">
 				<Table>
 					<TableHeader>
 						<TableRow>
+							<TableHead>No. Tiket</TableHead>
 							<TableHead>KUA</TableHead>
-							<TableHead>Pending</TableHead>
-							<TableHead>Diproses</TableHead>
-							<TableHead>Disetujui</TableHead>
-							<TableHead>Ditolak</TableHead>
-							<TableHead>Total</TableHead>
+							<TableHead>Nama Pasangan</TableHead>
+							<TableHead>Tanggal</TableHead>
+							<TableHead>Status</TableHead>
+							<TableHead>Catatan</TableHead>
 							<TableHead className="text-right">Aksi</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -162,46 +167,69 @@ const DetailRekap = () => {
 									</div>
 								</TableCell>
 							</TableRow>
-						) : data?.length === 0 ? (
+						) : data.length === 0 ? (
 							<TableRow>
 								<TableCell colSpan={6}>
 									<EmptyState
-										title="Tidak ada riwayat"
-										description={searchQuery ? "Tidak ditemukan data yang cocok." : "Belum ada pengajuan yang selesai."}
-										icon={CheckCircle2}
+										title="Tidak ada data"
+										description={''}
+										icon={FileText}
 									/>
 								</TableCell>
 							</TableRow>
 						) : (
-							data?.map((sub, idx) => {
-								// Get approval date from logs
-
+							data.map((sub) => {
+								let rejectionNote = '-';
+								if (sub.status === 'REJECTED' || sub.status === 'NEEDS_REVISION') {
+									const log = sub.logs?.filter(l => l.new_status === 'REJECTED' || l.new_status === 'NEEDS_REVISION')
+										.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+									if (log) rejectionNote = log.notes;
+								}
+								const href = `/kemenag/rekap/${currentKecamatan.id}/${sub.id}`
 								return (
-									<TableRow key={idx}>
-										<TableCell className="font-medium" >
-											{sub.kecamatan_name}
+									<TableRow key={sub.id}>
+										<TableCell className="font-medium text-primary-600" >
+											<a href={href}>
+												#{sub.ticket_number}
+											</a>
 										</TableCell>
 										<TableCell className="font-medium">
-											{sub.pending_verification}
+											{sub.creator.kecamatan.nama}
 										</TableCell>
-										<TableCell className="font-medium">
-											{sub.processing}
+										<TableCell>
+											<div className="font-medium text-slate-900">{sub.data_pernikahan?.husband_name}</div>
+											<div className="text-xs text-slate-500">& {sub.data_pernikahan?.wife_name}</div>
 										</TableCell>
-										<TableCell className="font-medium">
-											{sub.approved}
+										<TableCell>
+											<div className="text-sm text-slate-600">
+												{new Date(sub.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+											</div>
+											<div className="text-xs text-slate-400">
+												{new Date(sub.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+											</div>
 										</TableCell>
-										<TableCell className="font-medium">
-											{sub.rejected}
+										<TableCell>
+											<Badge variant={getStatusBadgeVariant(sub.status)}>
+												{getStatusLabel(sub.status)}
+											</Badge>
 										</TableCell>
-										<TableCell className="font-medium">
-											{sub.total}
+										<TableCell className="max-w-xs truncate text-slate-500">
+											{rejectionNote}
 										</TableCell>
-
-										<TableCell className="text-right">
+										<TableCell className="text-right space-x-2">
+											{['DRAFT', 'REJECTED', 'NEEDS_REVISION'].includes(sub.status) && (
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => navigate(`/kua/submission/edit/${sub.id}`)}
+												>
+													{sub.status === 'DRAFT' ? 'Edit' : 'Perbaiki'}
+												</Button>
+											)}
 											<Button
 												variant="ghost"
 												size="sm"
-												onClick={() => navigate(`/kemenag/rekap/${sub.kecamatan_id}`)}
+												onClick={() => navigate(href)}
 											>
 												Detail
 											</Button>

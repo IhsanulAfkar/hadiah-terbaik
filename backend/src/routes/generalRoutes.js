@@ -3,7 +3,7 @@ const router = express.Router();
 const dashboardController = require('../controllers/dashboardController');
 const reportController = require('../controllers/reportController');
 const masterController = require('../controllers/masterController');
-const { verifyToken } = require('../middlewares/authMiddleware');
+const { verifyToken, authorizeRole } = require('../middlewares/authMiddleware');
 
 /**
  * @swagger
@@ -55,6 +55,8 @@ router.get('/dashboard/stats', verifyToken, dashboardController.getStats);
  *         description: Binary file
  */
 router.get('/reports/export', verifyToken, reportController.exportReport);
+router.get('/reports/export/kemenag', verifyToken, authorizeRole(['KEMENAG']), reportController.exportReportKemenag);
+router.get('/reports/export/kemenag/summary', verifyToken, authorizeRole(['KEMENAG']), reportController.exportKemenagSummary);
 
 /**
  * @swagger
