@@ -11,7 +11,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -45,23 +45,22 @@ services:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     restart: always
     ports:
-      - "2200:80"
+      - "3105:80"
     networks:
       - app-network
 
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    restart: always
-    command: tunnel run
-    environment:
-      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
-    networks:
-      - app-network
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   restart: always
+  #   command: tunnel run
+  #   environment:
+  #     - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+  #   networks:
+  #     - app-network
 
 volumes:
   postgres_data:
   app_uploads:
-
 
 networks:
   app-network:
