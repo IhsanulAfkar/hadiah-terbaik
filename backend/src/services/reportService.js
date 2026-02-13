@@ -134,11 +134,11 @@ const generatePdfSummaryKemenag = async (data, res, period = 'all') => {
 
     doc.fontSize(10);
     doc.text('KUA', 50, y);
-    doc.text('Pending', 250, y);
-    doc.text('Diproses', 300, y);
-    doc.text('Disetujui', 350, y);
-    doc.text('Ditolak', 400, y);
-    doc.text('Total', 450, y);
+    doc.text('Total', 250, y);
+    doc.text('Menunggu', 300, y);
+    doc.text('Diproses', 350, y);
+    doc.text('Disetujui', 400, y);
+    doc.text('Ditolak/Revisi', 450, y);
 
     y += 20;
     doc.moveTo(50, y).lineTo(550, y).stroke();
@@ -152,11 +152,11 @@ const generatePdfSummaryKemenag = async (data, res, period = 'all') => {
         }
 
         doc.text(item.kecamatan_name, 50, y);
-        doc.text(item.pending_verification, 250, y);
-        doc.text(item.processing, 300, y);
-        doc.text(item.approved, 350, y);
-        doc.text(item.rejected, 400, y);
-        doc.text(item.total, 450, y);
+        doc.text(item.total, 250, y);
+        doc.text(item.submitted, 300, y);
+        doc.text(item.processing + item.pending_verification, 350, y);
+        doc.text(item.approved, 400, y);
+        doc.text(item.rejected + item.needs_revision, 450, y);
 
         y += itemHeight;
     });
@@ -240,21 +240,21 @@ const generateExcelSummaryKemenag = async (data, res, period = 'all') => {
 
     worksheet.columns = [
         { header: 'KUA', key: 'kua', width: 25 },
-        { header: 'Pending', key: 'pending', width: 20 },
-        { header: 'Diproses', key: 'processing', width: 20 },
-        { header: 'Disetujui', key: 'approved', width: 20 },
-        { header: 'Ditolak', key: 'rejected', width: 20 },
         { header: 'Total', key: 'total', width: 20 },
+        { header: 'Menunggu', key: 'submitted', width: 20 },
+        { header: 'Diproses', key: 'pending', width: 20 },
+        { header: 'Disetujui', key: 'approved', width: 20 },
+        { header: 'Ditolak/Revisi', key: 'rejected', width: 20 },
     ];
 
     data.forEach(item => {
         worksheet.addRow({
             kua: item.kecamatan_name,
-            pending: item.pending_verification,
-            processing: item.processing,
-            approved: item.approved,
-            rejected: item.rejected,
             total: item.total,
+            submitted: item.submitted,
+            processing: item.processing + item.pending_verification,
+            approved: item.approved,
+            rejected: item.rejected + item.needs_revision,
         });
     });
 
