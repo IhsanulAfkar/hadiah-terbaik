@@ -9,7 +9,7 @@ async function resetPasswords() {
     const password = 'password123';
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const users = ['admin', 'kua_officer', 'dukcapil_op'];
+    const users = ['admin', 'kua_officer', 'dukcapil_op', 'kemenag_user'];
 
     for (const username of users) {
         await prisma.user.update({
