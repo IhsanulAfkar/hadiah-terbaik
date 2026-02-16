@@ -37,9 +37,11 @@ export const AuthProvider = ({ children }) => {
         return () => clearInterval(interval);
     }, [user]);
 
-    const login = async (username, password) => {
+    const login = async ({
+        username, password, captcha
+    }) => {
         try {
-            const response = await api.post('/auth/login', { username, password });
+            const response = await api.post('/auth/login', { username, password, captcha });
             const { token, user } = response.data.data;
 
             sessionStorage.setItem('token', token);

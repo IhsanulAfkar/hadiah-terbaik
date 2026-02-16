@@ -253,38 +253,32 @@ function App() {
                             </Route>
 
                             {/* Admin Routes */}
-                            <Route path="/admin">
+                            <Route path="/admin"
+                                element={
+                                    <ProtectedRoute roles={['ADMIN']}>
+                                        <Outlet />
+                                    </ProtectedRoute>
+                                }>
                                 <Route
                                     path="dashboard"
-                                    element={
-                                        <ProtectedRoute roles={['ADMIN']}>
-                                            <AdminDashboard />
-                                        </ProtectedRoute>
-                                    }
+                                    element={<AdminDashboard />}
                                 />
+                                <Route path="rekap">
+                                    <Route index element={<RekapitulasiKemenag />} />
+                                    <Route path=":id" element={<DetailRekap />} />
+                                    <Route path=":id/:submissionId" element={<KemenagSubmissionDetail />} />
+                                </Route>
                                 <Route
                                     path="users"
-                                    element={
-                                        <ProtectedRoute roles={['ADMIN']}>
-                                            <UserManagement />
-                                        </ProtectedRoute>
-                                    }
+                                    element={<UserManagement />}
                                 />
                                 <Route
                                     path="logs"
-                                    element={
-                                        <ProtectedRoute roles={['ADMIN']}>
-                                            <SystemLogs />
-                                        </ProtectedRoute>
-                                    }
+                                    element={<SystemLogs />}
                                 />
                                 <Route
                                     path="master"
-                                    element={
-                                        <ProtectedRoute roles={['ADMIN']}>
-                                            <MasterKecamatan />
-                                        </ProtectedRoute>
-                                    }
+                                    element={<MasterKecamatan />}
                                 />
                             </Route>
                         </Route>

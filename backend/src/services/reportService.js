@@ -235,8 +235,6 @@ const generateExcelSummaryKemenag = async (data, res, period = 'all') => {
     worksheet.getCell('A2').value = `Periode: ${periodLabels[period] || 'Semua Data'} | Total: ${data.length} kecamatan`;
     worksheet.getCell('A2').alignment = { horizontal: 'center' };
 
-    // Add empty row
-    worksheet.addRow([]);
 
     worksheet.columns = [
         { header: 'KUA', key: 'kua', width: 25 },
@@ -246,13 +244,20 @@ const generateExcelSummaryKemenag = async (data, res, period = 'all') => {
         { header: 'Disetujui', key: 'approved', width: 20 },
         { header: 'Ditolak/Revisi', key: 'rejected', width: 20 },
     ];
-
+    worksheet.addRow({
+        kua: 'KUA',
+        total: 'Total',
+        submitted: 'Menunggu',
+        pending: 'Diproses',
+        approved: 'Disetujui',
+        rejected: 'Ditolak/Revisi',
+    });
     data.forEach(item => {
         worksheet.addRow({
             kua: item.kecamatan_name,
             total: item.total,
             submitted: item.submitted,
-            processing: item.processing + item.pending_verification,
+            pending: item.processing + item.pending_verification,
             approved: item.approved,
             rejected: item.rejected + item.needs_revision,
         });

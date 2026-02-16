@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
 import { Eye, EyeOff } from 'lucide-react';
-
+import { TrustcaptchaComponent } from "@trustcomponent/trustcaptcha-react";
+import { toast } from 'react-toastify';
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const trustcaptchaRef = useRef(null);
+    const [verificationResult, setVerificationResult] = useState(null);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
@@ -17,11 +20,19 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!verificationResult) {
+            toast.error('Invalid Captcha')
+            return
+        }
+
         setError('');
         setIsLoading(true);
 
         try {
-            const result = await login(username, password);
+            const result = await login({
+                username, password,
+                captcha: verificationResult
+            });
             if (result.success) {
                 navigate('/');
             } else {
@@ -33,6 +44,21 @@ const Login = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+    function solved(verificationToken) {
+        console.log(`Verification-token: ${verificationToken}`);
+        setVerificationResult(verificationToken)
+    }
+
+    function failed(error) {
+        console.error(error);
+    }
+
+
+    const resetCaptcha = () => {
+        trustcaptchaRef.current.reset();
+        setForm({ message: '', verificationToken: null });
+        setVerificationResult(null);
     };
 
     return (
@@ -90,6 +116,15 @@ const Login = () => {
                     </div>
                 </div>
 
+                <TrustcaptchaComponent
+                    ref={trustcaptchaRef}
+                    sitekey="fd049106-ed60-4af5-9b8f-6fc5dbe7ec22"
+                    language="id"
+                    theme="light"
+                    tokenFieldName="tc-verification-token"
+                    onCaptchaSolved={event => solved(event.detail)}
+                    onCaptchaFailed={event => failed(event.detail)}
+                ></TrustcaptchaComponent>
                 <div className="pt-2">
                     <Button
                         type="submit"

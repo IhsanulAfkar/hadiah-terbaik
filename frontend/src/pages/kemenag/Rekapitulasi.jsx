@@ -17,9 +17,10 @@ import Loading from '../../components/common/Loading';
 import { useKemenagRekap } from '../../hooks/useKemenagRekap';
 import { useKemenagStatistik } from '../../hooks/useKemenagStatistik';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useKecamatan } from '../../hooks/useKecamatan';
 import { MultiSelect } from '@/components/ui/multi-select';
+import { useAuth } from '@/context/AuthContext';
 
 const RekapitulasiKemenag = () => {
 	// Reusing the logic from LaporanKUA for now, assuming similar structure
@@ -30,6 +31,7 @@ const RekapitulasiKemenag = () => {
 		approved: 0,
 		rejected: 0
 	});
+	const { user } = useAuth()
 	const [selectKecamatan, setSelectKecamatan] = useState([])
 	const navigate = useNavigate()
 	const [period, setPeriod] = useState('month');
@@ -77,13 +79,15 @@ const RekapitulasiKemenag = () => {
 		}
 	};
 	if (isLoading) return <Loading />;
-
+	if (!['ADMIN', 'KEMENAG'].includes(user.role)) {
+		return <Navigate to={'/auth/login'} replace />
+	}
 	return (
 		<div className="space-y-8">
 			{/* Header Section */}
 			<div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-display font-bold text-slate-900">Laporan Statistik (Kemenag)</h1>
+					<h1 className="text-2xl font-display font-bold text-slate-900">Laporan Statistik</h1>
 					<p className="mt-1 text-sm text-slate-500">
 						Monitoring data pengajuan nikah lintas wilayah.
 					</p>
@@ -250,7 +254,7 @@ const RekapitulasiKemenag = () => {
 											<Button
 												variant="ghost"
 												size="sm"
-												onClick={() => navigate(`/kemenag/rekap/${sub.kecamatan_id}`)}
+												onClick={() => navigate(`/${user.role === 'KEMENAG' ? 'kemenag' : 'admin'}/rekap/${sub.kecamatan_id}`)}
 											>
 												Detail
 											</Button>

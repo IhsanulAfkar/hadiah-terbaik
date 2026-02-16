@@ -55,8 +55,8 @@ router.get('/dashboard/stats', verifyToken, dashboardController.getStats);
  *         description: Binary file
  */
 router.get('/reports/export', verifyToken, reportController.exportReport);
-router.get('/reports/export/kemenag', verifyToken, authorizeRole(['KEMENAG']), reportController.exportReportKemenag);
-router.get('/reports/export/kemenag/summary', verifyToken, authorizeRole(['KEMENAG']), reportController.exportKemenagSummary);
+router.get('/reports/export/kemenag', verifyToken, authorizeRole(['KEMENAG', 'ADMIN']), reportController.exportReportKemenag);
+router.get('/reports/export/kemenag/summary', verifyToken, authorizeRole(['KEMENAG', 'ADMIN']), reportController.exportKemenagSummary);
 
 /**
  * @swagger

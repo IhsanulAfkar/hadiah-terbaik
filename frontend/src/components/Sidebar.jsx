@@ -56,6 +56,7 @@ const Sidebar = ({ onCloseMobile }) => {
             case 'ADMIN':
                 return [
                     { name: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
+                    { name: 'Rekapitulasi', icon: History, path: '/admin/rekap' },
                     { name: 'Manajemen User', icon: Users, path: '/admin/users' },
                     { name: 'Master Data', icon: Database, path: '/admin/master' },
                     { name: 'Log Sistem', icon: Activity, path: '/admin/logs' },

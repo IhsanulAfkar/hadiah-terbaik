@@ -17,12 +17,13 @@ import Loading from '../../components/common/Loading';
 import { useKemenagRekap } from '../../hooks/useKemenagRekap';
 import { useKemenagStatistik } from '../../hooks/useKemenagStatistik';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useKemenagRekapDetail } from '@/hooks/useKemenagRekapDetail';
 import { useKecamatan } from '@/hooks/useKecamatan';
 import EmptyState from '@/components/ui/EmptyState';
 import Badge from '@/components/ui/Badge';
 import { getStatusBadgeVariant, getStatusLabel } from '@/services/helper';
+import { useAuth } from '@/context/AuthContext';
 
 const DetailRekap = () => {
 	// Reusing the logic from LaporanKUA for now, assuming similar structure
@@ -37,6 +38,7 @@ const DetailRekap = () => {
 		rejected: 0
 	});
 	const navigate = useNavigate()
+	const { user } = useAuth()
 	const [period, setPeriod] = useState('month');
 	const { data, isLoading } = useKemenagRekapDetail(period, kecamatanUuid)
 	useEffect(() => {
@@ -80,6 +82,9 @@ const DetailRekap = () => {
 
 	if (isLoading) return <Loading />;
 	if (!currentKecamatan) return <></>
+	if (!['ADMIN', 'KEMENAG'].includes(user.role)) {
+		return <Navigate to={'/auth/login'} replace />
+	}
 	return (
 		<div className="space-y-8">
 			{/* Header Section */}
@@ -185,7 +190,7 @@ const DetailRekap = () => {
 										.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
 									if (log) rejectionNote = log.notes;
 								}
-								const href = `/kemenag/rekap/${currentKecamatan.id}/${sub.id}`
+								const href = `/${user.role === 'KEMENAG' ? 'kemenag' : 'admin'}/rekap/${currentKecamatan.id}/${sub.id}`
 								return (
 									<TableRow key={sub.id}>
 										<TableCell className="font-medium text-primary-600" >

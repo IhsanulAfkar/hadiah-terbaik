@@ -10,7 +10,7 @@ const { verifyToken, authorizeRole } = require('../middlewares/authMiddleware');
  */
 
 // All routes require authentication and KEMENAG role
-router.use(verifyToken, authorizeRole(['KEMENAG']));
+router.use(verifyToken, authorizeRole(['KEMENAG', 'ADMIN']));
 
 /**
  * Statistics

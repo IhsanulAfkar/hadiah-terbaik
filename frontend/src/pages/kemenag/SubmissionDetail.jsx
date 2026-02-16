@@ -7,13 +7,14 @@ import Button from '../../components/ui/Button';
 import Alert from '../../components/ui/Alert';
 import { ChevronLeft, FileText, Calendar, MapPin, User, Download, Eye } from 'lucide-react';
 import Loading from '../../components/common/Loading';
+import { useAuth } from '@/context/AuthContext';
 
 const SubmissionDetail = () => {
     const { submissionId } = useParams();
     const navigate = useNavigate();
     const [submission, setSubmission] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    const { user } = useAuth()
     useEffect(() => {
         const fetchDetail = async () => {
             try {
@@ -99,14 +100,16 @@ const SubmissionDetail = () => {
                     <div className="mt-2 text-sm">
                         <p className="font-semibold mb-1">Catatan dari Dukcapil:</p>
                         <p className="italic mb-4">&quot;{rejectionLog.notes || 'Tidak ada catatan'}&quot;</p>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            className="bg-white hover:bg-slate-50 text-slate-900 border-slate-300"
-                            onClick={() => navigate(`/kua/submission/edit/${id}`)}
-                        >
-                            Perbaiki Pengajuan
-                        </Button>
+                        {user.role === 'KUA' &&
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-white hover:bg-slate-50 text-slate-900 border-slate-300"
+                                onClick={() => navigate(`/kua/submission/edit/${id}`)}
+                            >
+                                Perbaiki Pengajuan
+                            </Button>
+                        }
                     </div>
                 </Alert>
             )}
