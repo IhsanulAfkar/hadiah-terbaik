@@ -9,24 +9,24 @@ const login = async (req, res) => {
         if (!username || !password) {
             return res.status(400).json({ success: false, message: 'Username and password required' });
         }
-        if (!captcha) {
-            return res.status(400).json({ success: false, message: 'Captcha is required' });
-        }
-        let verificationResult;
-        try {
-            verificationResult = await CaptchaManager.getVerificationResult(process.env.CAPTCHA_SECRET_KEY, captcha);
-        } catch (error) {
-            // Fetch verification result failed - handle error
-            console.error(error)
-            res.status(500).json({ success: false, message: 'Internal Server Error' });
-            return
-        }
+        // if (!captcha) {
+        //     return res.status(400).json({ success: false, message: 'Captcha is required' });
+        // }
+        // let verificationResult;
+        // try {
+        //     verificationResult = await CaptchaManager.getVerificationResult(process.env.CAPTCHA_SECRET_KEY, captcha);
+        // } catch (error) {
+        //     // Fetch verification result failed - handle error
+        //     console.error(error)
+        //     res.status(500).json({ success: false, message: 'Internal Server Error' });
+        //     return
+        // }
 
-        // Act on the verification result
-        if (!verificationResult.verificationPassed || verificationResult.score > 0.5) {
-            console.log("Verification failed or bot score > 0.5 – possible automated request.");
-            return res.status(400).json({ success: false, message: 'Captcha verification failed' });
-        }
+        // // Act on the verification result
+        // if (!verificationResult.verificationPassed || verificationResult.score > 0.5) {
+        //     console.log("Verification failed or bot score > 0.5 – possible automated request.");
+        //     return res.status(400).json({ success: false, message: 'Captcha verification failed' });
+        // }
         const result = await authService.login(username, password);
         res.cookie('app_token', result.token, {
             httpOnly: true,

@@ -10,6 +10,7 @@ import Alert from '../../components/ui/Alert';
 import Loading from '../../components/common/Loading';
 import { Eye, Lock, CheckCircle, XCircle, FileText, Download, AlertTriangle, User, Calendar, MapPin, Phone, Mail } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useScenario } from '@/hooks/useScenario';
 
 const VerificationDetail = () => {
     const { id } = useParams();
@@ -21,7 +22,7 @@ const VerificationDetail = () => {
     const [processing, setProcessing] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [confirmAction, setConfirmAction] = useState(null);
-
+    const { data: scenarios } = useScenario()
     const fetchDetail = useCallback(async () => {
         try {
             // Use role-specific endpoint
@@ -158,6 +159,7 @@ const VerificationDetail = () => {
             default: return 'default';
         }
     };
+    const selectedScenario = scenarios.find(s => s.value === data_pernikahan.mou_scenario);
 
     return (
         <div className="space-y-6">
@@ -309,6 +311,33 @@ const VerificationDetail = () => {
                                         </dd>
                                     </div>
                                 </div>
+                                {["VERIFIKATOR_DUKCAPIL", "OPERATOR_DUKCAPIL"].includes(user.role) && (
+                                    <div className='my-4'>
+                                        <p className='font-medium text-slate-700'>Skenario: {data_pernikahan.mou_scenario}</p>
+                                        <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                            <p className="text-sm text-blue-800 dark:text-blue-300 font-medium">
+                                                Dokumen yang diperlukan untuk opsi ini:
+                                            </p>
+                                            <ul className="mt-2 text-xs text-blue-700 dark:text-blue-400 list-disc list-inside space-y-1">
+                                                {selectedScenario.required_docs && selectedScenario.required_docs.map(doc => (
+                                                    <li key={doc}>{doc}</li>
+                                                ))}
+                                            </ul>
+                                            {selectedScenario.optional_docs && selectedScenario.optional_docs.length > 0 && (
+                                                <>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 font-medium">
+                                                        Dokumen opsional:
+                                                    </p>
+                                                    <ul className="mt-1 text-xs text-gray-500 dark:text-gray-500 list-disc list-inside">
+                                                        {selectedScenario.optional_docs.map(doc => (
+                                                            <li key={doc}>{doc}</li>
+                                                        ))}
+                                                    </ul>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                                 {data_pernikahan?.notes && (
                                     <div className="p-4 bg-yellow-50/50">
                                         <dt className="text-sm font-medium text-yellow-800 mb-1 flex items-center">

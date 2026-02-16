@@ -9,7 +9,10 @@ const upload = require('../middlewares/uploadMiddleware');
  * Base path: /api/v1/kua
  * Role: KUA only
  */
-
+router.get('/scenarios', verifyToken, authorizeRole(["OPERATOR_DUKCAPIL", "VERIFIKATOR_DUKCAPIL", 'KUA']), (req, res) => {
+    const { getAllScenarios } = require('../utils/mouScenarios');
+    res.json({ success: true, data: getAllScenarios() });
+});
 // All routes require authentication and KUA role
 router.use(verifyToken, authorizeRole(['KUA']));
 
@@ -31,10 +34,7 @@ router.delete('/documents/:id', submissionController.deleteDocument);
 /**
  * MOU Scenarios (for dropdown)
  */
-router.get('/scenarios', (req, res) => {
-    const { getAllScenarios } = require('../utils/mouScenarios');
-    res.json({ success: true, data: getAllScenarios() });
-});
+
 
 /**
  * Reports

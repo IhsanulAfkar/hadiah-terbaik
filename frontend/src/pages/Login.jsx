@@ -20,10 +20,10 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!verificationResult) {
-            toast.error('Invalid Captcha')
-            return
-        }
+        // if (!verificationResult) {
+        //     toast.error('Invalid Captcha')
+        //     return
+        // }
 
         setError('');
         setIsLoading(true);
@@ -116,7 +116,7 @@ const Login = () => {
                     </div>
                 </div>
 
-                <TrustcaptchaComponent
+                {/* <TrustcaptchaComponent
                     ref={trustcaptchaRef}
                     sitekey="fd049106-ed60-4af5-9b8f-6fc5dbe7ec22"
                     language="id"
@@ -124,7 +124,7 @@ const Login = () => {
                     tokenFieldName="tc-verification-token"
                     onCaptchaSolved={event => solved(event.detail)}
                     onCaptchaFailed={event => failed(event.detail)}
-                ></TrustcaptchaComponent>
+                ></TrustcaptchaComponent> */}
                 <div className="pt-2">
                     <Button
                         type="submit"
