@@ -5,13 +5,12 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
 import { Eye, EyeOff } from 'lucide-react';
-import { TrustcaptchaComponent } from "@trustcomponent/trustcaptcha-react";
-import { toast } from 'react-toastify';
+import ReCAPTCHA from 'react-google-recaptcha';
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const trustcaptchaRef = useRef(null);
+    const captchaRef = useRef(null);
     const [verificationResult, setVerificationResult] = useState(null);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -116,15 +115,14 @@ const Login = () => {
                     </div>
                 </div>
 
-                {/* <TrustcaptchaComponent
-                    ref={trustcaptchaRef}
-                    sitekey="fd049106-ed60-4af5-9b8f-6fc5dbe7ec22"
-                    language="id"
-                    theme="light"
-                    tokenFieldName="tc-verification-token"
-                    onCaptchaSolved={event => solved(event.detail)}
-                    onCaptchaFailed={event => failed(event.detail)}
-                ></TrustcaptchaComponent> */}
+                <ReCAPTCHA
+                    ref={captchaRef}
+                    sitekey={
+                        '6LcXxXIsAAAAAFHPD5UBv4LXRsXR4zTT2ZAsx6vZ'
+                    }
+                    onChange={value => setVerificationResult(value)}
+                    onExpired={() => setVerificationResult(null)}
+                />
                 <div className="pt-2">
                     <Button
                         type="submit"

@@ -1,6 +1,7 @@
 const authService = require('../services/authService');
 const logger = require('../utils/logger');
 const { CaptchaManager } = require('@trustcomponent/trustcaptcha-nodejs')
+const { verifyCaptchaV2 } = require('../utils/captcha')
 const login = async (req, res) => {
     try {
         const { username, password, captcha } = req.body;
@@ -9,9 +10,15 @@ const login = async (req, res) => {
         if (!username || !password) {
             return res.status(400).json({ success: false, message: 'Username and password required' });
         }
-        // if (!captcha) {
-        //     return res.status(400).json({ success: false, message: 'Captcha is required' });
-        // }
+
+        if (!captcha) {
+            return res.status(400).json({ success: false, message: 'Captcha is required' });
+        }
+        const verifycaptcha = await verifyCaptchaV2(captcha)
+        if (!verifycaptcha.success) {
+            return res.status(400).json({ success: false, message: 'Invalid Captcha' })
+        }
+
         // let verificationResult;
         // try {
         //     verificationResult = await CaptchaManager.getVerificationResult(process.env.CAPTCHA_SECRET_KEY, captcha);

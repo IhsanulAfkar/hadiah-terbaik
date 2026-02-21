@@ -3,6 +3,13 @@
  * Complete mapping of 17 official scenarios with document requirements
  * Based on official Kemenag-Dukcapil MOU table
  */
+const required_docs = [
+    "BUKU_NIKAH",
+    "KTP_SUAMI",
+    "KTP_ISTRI",
+    "KK_SUAMI",
+    "KK_ISTRI",
+]
 
 const SCENARIOS = {
     1: {
@@ -10,128 +17,136 @@ const SCENARIOS = {
         outside_district: false,
         kk_option: "TETAP_MASING_MASING",
         biodata_change: false,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI"]
+        required_docs,
+        optional_docs: ["BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI"]
     },
     2: {
         name: "Merubah Status Perkawinan, Pisah KK Ikut Alamat Orang Tua Istri",
         outside_district: false,
         kk_option: "PISAH_IKUT_ORTU_ISTRI",
         biodata_change: false,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F103"]
+        required_docs,
+        optional_docs: ["BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "FORM_F103"]
     },
     3: {
         name: "Merubah Status Perkawinan, Pisah KK Ikut Alamat Orang Tua Suami",
         outside_district: false,
         kk_option: "PISAH_IKUT_ORTU_SUAMI",
         biodata_change: false,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F103"]
+        required_docs,
+        optional_docs: ["BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "FORM_F103"]
     },
     4: {
         name: "Merubah Status Perkawinan, Pisah KK dengan Alamat Baru",
         outside_district: false,
         kk_option: "PISAH_ALAMAT_BARU",
         biodata_change: false,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F103"]
+        required_docs,
+        optional_docs: ["BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "FORM_F103"]
     },
     5: {
         name: "Merubah Status, Tetap pada KK Masing-masing, dan Perubahan Biodata (Pendidikan/Pekerjaan)",
         outside_district: false,
         kk_option: "TETAP_MASING_MASING",
         biodata_change: true,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"],
-        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI"]
+        required_docs,
+        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"]
     },
     6: {
         name: "Merubah Status Perkawinan, Pisah KK Ikut Alamat Orang Tua Istri, dan Perubahan Biodata",
         outside_district: false,
         kk_option: "PISAH_IKUT_ORTU_ISTRI",
         biodata_change: true,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F103", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"],
-        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI"]
+        required_docs,
+        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI", "FORM_F103", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI",]
     },
     7: {
         name: "Merubah Status Perkawinan, Pisah KK Ikut Alamat Orang Tua Suami, dan Perubahan Biodata",
         outside_district: false,
         kk_option: "PISAH_IKUT_ORTU_SUAMI",
         biodata_change: true,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F103", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"],
-        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI"]
+        required_docs,
+        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "FORM_F103", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"]
     },
     8: {
         name: "Merubah Status Perkawinan, Pisah KK dengan Alamat Baru, dan Perubahan Biodata",
         outside_district: false,
         kk_option: "PISAH_ALAMAT_BARU",
         biodata_change: true,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F103", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"],
-        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI"]
+        required_docs,
+        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "FORM_F103", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"]
     },
     9: {
         name: "(Luar Kabupaten) Merubah Status Perkawinan, Tetap pada KK Masing-masing",
         outside_district: true,
         kk_option: "TETAP_MASING_MASING",
         biodata_change: false,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI"]
+        required_docs,
+        optional_docs: ["BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI",]
     },
     10: {
         name: "(Luar Kabupaten) Merubah Status Perkawinan, Pisah KK Ikut Alamat Orang Tua Istri",
         outside_district: true,
         kk_option: "PISAH_IKUT_ORTU_ISTRI",
         biodata_change: false,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "SKPWNI"]
+        required_docs,
+        optional_docs: ["BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "SKPWNI"]
     },
     11: {
         name: "(Luar Kabupaten) Merubah Status Perkawinan, Pisah KK Ikut Alamat Orang Tua Suami",
         outside_district: true,
         kk_option: "PISAH_IKUT_ORTU_SUAMI",
         biodata_change: false,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F103"]
+        required_docs,
+        optional_docs: ["BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "FORM_F103"]
     },
     12: {
         name: "(Luar Kabupaten) Merubah Status Perkawinan, Pisah KK dengan Alamat Baru",
         outside_district: true,
         kk_option: "PISAH_ALAMAT_BARU",
         biodata_change: false,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F103", "SKPWNI"]
+        required_docs,
+        optional_docs: ["BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "FORM_F103", "SKPWNI"]
     },
     13: {
         name: "(Luar Kabupaten) Merubah Status, Tetap pada KK Masing-masing, dan Perubahan Biodata",
         outside_district: true,
         kk_option: "TETAP_MASING_MASING",
         biodata_change: true,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"],
-        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI"]
+        required_docs,
+        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI",]
     },
     14: {
         name: "(Luar Kabupaten) Merubah Status Perkawinan, Pisah KK Ikut Alamat Orang Tua Istri, dan Perubahan Biodata",
         outside_district: true,
         kk_option: "PISAH_IKUT_ORTU_ISTRI",
         biodata_change: true,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "SKPWNI", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"],
-        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI"]
+        required_docs,
+        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "SKPWNI", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"]
     },
     15: {
         name: "(Luar Kabupaten) Merubah Status Perkawinan, Pisah KK Ikut Alamat Orang Tua Suami, dan Perubahan Biodata",
         outside_district: true,
         kk_option: "PISAH_IKUT_ORTU_SUAMI",
         biodata_change: true,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "SKPWNI", "FORM_F103", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"],
-        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI"]
+        required_docs,
+        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "SKPWNI", "FORM_F103", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"]
     },
     16: {
         name: "(Luar Kabupaten) Merubah Status Perkawinan, Pisah KK dengan Alamat Masuk Kabupaten, dan Perubahan Biodata",
         outside_district: true,
         kk_option: "PISAH_ALAMAT_BARU",
         biodata_change: true,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F103", "SKPWNI", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"],
-        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI"]
+        required_docs,
+        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "FORM_F103", "SKPWNI", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"]
     },
     17: {
         name: "(Luar Kabupaten) Merubah Status Perkawinan, Pisah KK dengan Alamat Baru Luar Kabupaten, dan Perubahan Biodata",
         outside_district: true,
         kk_option: "PISAH_ALAMAT_BARU",
         biodata_change: true,
-        required_docs: ["BUKU_NIKAH", "KK_SUAMI", "KK_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "KTP_SUAMI", "KTP_ISTRI", "FORM_F103", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"],
-        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI"]
+        required_docs,
+        optional_docs: ["SK_KERJA_SUAMI", "SK_KERJA_ISTRI", "BUKU_NIKAH_ORTU_SUAMI", "BUKU_NIKAH_ORTU_ISTRI", "FORM_F103", "FORM_F106", "IJAZAH_SUAMI", "IJAZAH_ISTRI"]
     }
 };
 
