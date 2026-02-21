@@ -4,6 +4,7 @@ import path from "path"
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [react()],
+    base: "/",
     server: {
         host: true,
         port: 80, // Docker maps 8080:80, but internally dev server can run on 80 or 5173
