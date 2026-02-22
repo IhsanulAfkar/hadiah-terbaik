@@ -263,8 +263,8 @@ const Step2Docs = ({ files, handleFileChange, onNext, onPrev, mouScenario }) => 
                 {optionalDocs.length > 0 && (
                     <div className="mt-10">
                         <div className="flex items-center gap-2 mb-6 border-b border-blue-200 pb-2">
-                            <Badge variant="secondary">Opsional</Badge>
-                            <h3 className="font-bold text-lg text-slate-800">Dokumen Opsional</h3>
+                            {/* <Badge variant="secondary">Opsional</Badge> */}
+                            <h3 className="font-bold text-lg text-slate-800">Dokumen lainnya</h3>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -275,7 +275,7 @@ const Step2Docs = ({ files, handleFileChange, onNext, onPrev, mouScenario }) => 
                                 return (
                                     <FileInput
                                         key={docType}
-                                        label={`${DOC_LABELS[docType] || docType} (Opsional)`}
+                                        label={`${DOC_LABELS[docType] || docType}`}
                                         name={fieldName}
                                         file={files[fieldName]}
                                         onChange={handleFileChangeWithValidation}

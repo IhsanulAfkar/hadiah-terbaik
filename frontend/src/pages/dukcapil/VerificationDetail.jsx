@@ -326,7 +326,7 @@ const VerificationDetail = () => {
                                             {selectedScenario.optional_docs && selectedScenario.optional_docs.length > 0 && (
                                                 <>
                                                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 font-medium">
-                                                        Dokumen opsional:
+                                                        Dokumen lainnya:
                                                     </p>
                                                     <ul className="mt-1 text-xs text-gray-500 dark:text-gray-500 list-disc list-inside">
                                                         {selectedScenario.optional_docs.map(doc => (
