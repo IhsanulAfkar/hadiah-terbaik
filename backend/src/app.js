@@ -43,7 +43,7 @@ app.use(helmet({
             baseUri: ["'self'"],
             formAction: ["'self'"],
             // Allow frontend to frame this API (for PDF previews)
-            frameAncestors: ["'self'", "https://ht.nasruladitri.space", "http://localhost:2200"],
+            frameAncestors: ["'self'", "https://ht.hadiah-terbaik.space", "http://localhost:3105"],
             upgradeInsecureRequests: [],
         },
     },
@@ -66,7 +66,7 @@ const corsOptions = {
         const allowedOrigins = process.env.CORS_ORIGIN
             ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
             : ['http://localhost:2200'];
-
+        console.log('allowed origins', allowedOrigins)
         // Allow requests with no origin (mobile apps, Postman, curl)
         if (!origin) return callback(null, true);
 
@@ -84,7 +84,7 @@ const corsOptions = {
     maxAge: 600 // Cache preflight requests for 10 minutes
 };
 
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
