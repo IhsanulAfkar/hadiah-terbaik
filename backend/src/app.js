@@ -84,7 +84,14 @@ const corsOptions = {
     maxAge: 600 // Cache preflight requests for 10 minutes
 };
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        "https://ht.hadiah-terbaik.space",
+        "http://172.23.5.188:3105",
+        "http://localhost:3105"
+    ],
+    credentials: true
+}))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
