@@ -35,7 +35,12 @@ app.use(helmet({
             scriptSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"], // TailwindCSS requires unsafe-inline
             imgSrc: ["'self'", "data:", "https:", "blob:"], // Allow blob for previews
-            connectSrc: ["'self'"],
+            connectSrc: [
+                "'self'",
+                "https://ht.hadiah-terbaik.space",
+                "http://localhost:3105",
+                "https://api.hadiah-terbaik.space"
+            ],
             fontSrc: ["'self'", "https:", "data:"],
             objectSrc: ["'none'"],
             mediaSrc: ["'self'"],

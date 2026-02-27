@@ -23,7 +23,7 @@ const globalLimiter = rateLimit({
 // 2. Auth Limiter (Strict brute-force protection for Login)
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // STRICT: Only 5 login attempts per 15 minutes (reduced from 100)
+    max: 100, // STRICT: Only 5 login attempts per 15 minutes (reduced from 100)
     skipSuccessfulRequests: true, // Only count failed login attempts
     standardHeaders: true,
     legacyHeaders: false,
