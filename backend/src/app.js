@@ -88,6 +88,7 @@ app.use(cors({
     origin: [
         "https://ht.hadiah-terbaik.space",
         "http://172.23.5.188:3105",
+        "http://localhost",
         "http://localhost:3105"
     ],
     credentials: true

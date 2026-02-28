@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import Button from '../../../components/ui/Button';
 import Badge from '../../../components/ui/Badge';
@@ -6,7 +6,7 @@ import Alert from '../../../components/ui/Alert';
 import { UploadCloud, CheckCircle, FileText, AlertCircle, Download, Info } from 'lucide-react';
 import api from '../../../services/api';
 
-const FileInput = ({ label, name, file, onChange, error, required, existingFile }) => (
+const FileInput = ({ label, name, file, onChange, error, required, existingFile, fileRef }) => (
     <div className="group">
         <label className="block text-sm font-medium text-slate-700 mb-2">
             {label} {required && !existingFile && <span className="text-red-500">*</span>}
@@ -36,6 +36,7 @@ const FileInput = ({ label, name, file, onChange, error, required, existingFile 
             }
         `}>
             <input
+                ref={fileRef}
                 type="file"
                 name={name}
                 id={name}
@@ -115,7 +116,7 @@ const Step2Docs = ({ files, handleFileChange, onNext, onPrev, mouScenario }) => 
         'SK_KERJA_SUAMI': 'sk_kerja_suami',
         'SK_KERJA_ISTRI': 'sk_kerja_istri'
     };
-
+    const fileRefs = useRef({})
     // Fetch scenario data when mouScenario changes
     useEffect(() => {
         const fetchScenarioData = async () => {
@@ -175,31 +176,77 @@ const Step2Docs = ({ files, handleFileChange, onNext, onPrev, mouScenario }) => 
             }
         }
     };
-
     const onSubmit = (e) => {
         e.preventDefault();
 
-        // Check for file validation errors
-        const hasErrors = Object.values(errors).some(err => err !== null && err !== undefined);
-        if (hasErrors) {
-            toast.error('Mohon perbaiki kesalahan file sebelum melanjutkan.');
-            return;
-        }
+        if (!scenarioData) return;
 
-        // Validate required documents based on scenario
-        if (scenarioData) {
-            const requiredDocs = scenarioData.required_docs || [];
-            for (const docType of requiredDocs) {
-                const fieldName = DOC_TO_FIELD[docType];
-                if (fieldName && !files[fieldName]) {
-                    toast.error(`Dokumen wajib: ${DOC_LABELS[docType] || docType}`);
-                    return;
+        const newErrors = { ...errors };
+        let firstErrorField = null;
+
+        const requiredDocs = scenarioData.required_docs || [];
+
+        for (const docType of requiredDocs) {
+            const fieldName = DOC_TO_FIELD[docType];
+
+            if (fieldName && !files[fieldName]) {
+                newErrors[fieldName] = 'Dokumen ini wajib diupload';
+
+                if (!firstErrorField) {
+                    firstErrorField = fieldName;
                 }
             }
         }
 
+        const hasFileValidationError = Object.values(errors).some(
+            err => err !== null && err !== undefined
+        );
+
+        if (firstErrorField || hasFileValidationError) {
+            setErrors(newErrors);
+            toast.error('Mohon lengkapi dokumen wajib terlebih dahulu.');
+
+            // 🔥 Scroll to first error
+            if (firstErrorField && fileRefs.current[firstErrorField]) {
+                fileRefs.current[firstErrorField].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+
+                // optional focus
+                fileRefs.current[firstErrorField].focus();
+            }
+
+            return;
+        }
+
         onNext();
     };
+    // const onSubmit = (e) => {
+    //     e.preventDefault();
+
+    //     // Check for file validation errors
+    //     const hasErrors = Object.values(errors).some(err => err !== null && err !== undefined);
+    //     if (hasErrors) {
+    //         toast.error('Mohon perbaiki kesalahan file sebelum melanjutkan.');
+    //         return;
+    //     }
+    //     toast.info('masuk')
+    //     // Validate required documents based on scenario
+    //     if (scenarioData) {
+    //         const requiredDocs = scenarioData.required_docs || [];
+    //         for (const docType of requiredDocs) {
+    //             const fieldName = DOC_TO_FIELD[docType];
+    //             if (fieldName && !files[fieldName]) {
+    //                 toast.error(`Dokumen wajib: ${DOC_LABELS[docType] || docType}`);
+    //                 return;
+    //             }
+    //             toast.info('masuk sini')
+    //         }
+    //     }
+
+    //     onNext();
+    // };
 
     // Render documents dynamically based on scenario
     const renderDocuments = () => {
@@ -244,6 +291,7 @@ const Step2Docs = ({ files, handleFileChange, onNext, onPrev, mouScenario }) => 
 
                                 return (
                                     <FileInput
+                                        fileRef={(el) => (fileRefs.current[fieldName] = el)}
                                         key={docType}
                                         label={DOC_LABELS[docType] || docType}
                                         name={fieldName}
